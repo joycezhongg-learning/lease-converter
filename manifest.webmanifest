@@ -1,7 +1,7 @@
 {
   "name": "Lease Converter",
   "short_name": "Lease",
-  "description": "Convert retail rents and areas across Asia-Pacific markets.",
+  "description": "Convert retail rents and areas across Asia-Pacific, US and UK markets.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

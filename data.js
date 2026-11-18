@@ -23,14 +23,14 @@ window.LC_DATA = (() => {
   const FX_FALLBACK = {
     date: "approximate fallback",
     rates: { USD: 1, CNY: 7.12, HKD: 7.78, TWD: 30.6, JPY: 151, KRW: 1395, SGD: 1.30,
-             MYR: 4.21, THB: 32.6, IDR: 16550, VND: 26350, PHP: 58.4, INR: 88.4, AUD: 1.53 },
+             MYR: 4.21, THB: 32.6, IDR: 16550, VND: 26350, PHP: 58.4, INR: 88.4, AUD: 1.53, GBP: 0.76 },
   };
 
   const CURRENCIES = {
     USD: "US dollar", CNY: "Chinese yuan", HKD: "Hong Kong dollar", TWD: "New Taiwan dollar",
     JPY: "Japanese yen", KRW: "Korean won", SGD: "Singapore dollar", MYR: "Malaysian ringgit",
     THB: "Thai baht", IDR: "Indonesian rupiah", VND: "Vietnamese dong", PHP: "Philippine peso",
-    INR: "Indian rupee", AUD: "Australian dollar",
+    INR: "Indian rupee", AUD: "Australian dollar", GBP: "British pound",
   };
 
   // trend: "up" | "down" | "flat"
@@ -159,6 +159,29 @@ window.LC_DATA = (() => {
       caution: null,
       bench: { value: 2722, unit: "sqm", period: "month", freq: "Quarterly", what: "Bangkok prime retail, gross", src: "JLL", when: "Q1 2026", change: "+0.6% q-o-q (Q2)", trend: "up",
                url: "https://realestateasia.com/commercial-retail/news/bangkok-prime-retail-rents-inch-06-in-q2" },
+    },
+    {
+      id: "uk", name: "United Kingdom", currency: "GBP", unit: "sqft", period: "year",
+      quote: "£ per sq ft per year (per annum; high-street shops usually Zone A)",
+      basis: "Net internal area. High-street shops are valued by Zone A: the first 20 ft (6.1 m) of depth from the shop window is at the full rate, and each further 20 ft band is worth half the one before.",
+      included: "Rent is \"per annum exclusive\": it excludes business rates (often 25–50% of rent), the service charge and VAT.",
+      extras: ["A Zone A rate is not a rent per actual square foot. A 20 × 60 ft shop (1,200 sq ft) is only 700 sq ft in Zone A terms, so £900 Zone A works out to about £525 per actual sq ft.", "Business rates are a property tax charged on top of rent and can add a large share of the occupancy cost.", "Department stores and large stores are not zoned; they are quoted per sq ft overall."],
+      caution: "UK high-street rents are often quoted Zone A, which applies only to the front 20 ft of the shop. The rent per actual sq ft is lower, so a Zone A rate converted here overstates the total rent.",
+      bench: { value: 2750, unit: "sqft", period: "year", freq: "Annual (C&W Main Streets Across the World)", what: "New Bond Street, London, prime Zone A", src: "C&W", when: "Nov 2025", change: "World's most expensive street", trend: "up",
+               url: "https://www.cushmanwakefield.com/en/united-kingdom/news/2025/11/new-bond-street-in-london-named-worlds-most-expensive-retail-destination-for-first-time",
+               extra: "Oxford Street prime Zone A: £900 per sq ft per year, back at mid-2019 levels (Knight Frank, Q2 2026).",
+               note: "Zone A rate, not comparable with other markets" },
+    },
+    {
+      id: "us", name: "United States", currency: "USD", unit: "sqft", period: "year",
+      quote: "US$ per sq ft per year",
+      basis: "Rentable or gross leasable area.",
+      included: "Shopping centres usually quote NNN (triple net): rent excludes property tax, insurance and common-area maintenance (CAM), which add roughly $2–15 per sq ft per year. Manhattan street retail is quoted as an asking rent.",
+      extras: ["Some West Coast markets, such as Los Angeles, quote rent per sq ft per month (NNN).", "Prime street benchmarks are ground-floor rents. Upper and lower floors rent for much less.", "Percentage rent (a share of sales above a set level) is common in malls."],
+      caution: "US rents are usually per year and often NNN (excluding taxes, insurance and CAM). Check whether a quote is net or gross, and whether it is per month (as in Los Angeles).",
+      bench: { value: 730, unit: "sqft", period: "year", freq: "Quarterly", what: "Manhattan ground-floor average asking rent, prime corridors", src: "C&W", when: "Q3 2026", change: "+5.2% y-o-y", trend: "up",
+               url: "https://www.cushmanwakefield.com/en/united-states/insights/us-marketbeats/new-york-city-area-marketbeats/manhattan-retail",
+               extra: "US shopping centre national average: $25.82 per sq ft per year (C&W, Q3 2026)." },
     },
     {
       id: "vn", name: "Vietnam", currency: "USD", unit: "sqm", period: "month",

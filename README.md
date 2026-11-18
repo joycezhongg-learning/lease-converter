@@ -1,16 +1,17 @@
 # Lease Converter
 
-**Convert retail rents and floor areas between Asia-Pacific markets, in the way each market actually quotes them.**
+**Convert retail rents and floor areas between Asia-Pacific, US and UK markets, in the way each market actually quotes them.**
 
 **→ Open the app: [joycezhongg-learning.github.io/lease-converter](https://joycezhongg-learning.github.io/lease-converter/)**
 
-Retail leasing across Asia-Pacific has no common standard for quoting rent:
+Retail leasing has no common standard for quoting rent:
 
 - **Shanghai** quotes RMB per m² per **day**.
 - **Tokyo** quotes yen per **tsubo** per month.
 - **Seoul** quotes won per **pyeong** per month.
 - **Singapore** quotes S$ per **sq ft** per month.
 - **Sydney** quotes A$ per m² per **year**.
+- **London** quotes £ per sq ft per year on a **Zone A** basis for high-street shops.
 
 Lease Converter is a small, fast web app that turns a rent and an area into another market's terms in one step. It's built for retail real estate brokers to use mid-conversation with a client.
 
@@ -45,9 +46,13 @@ Lease Converter is a small, fast web app that turns a rent and an area into anot
 | South Korea | ₩ per pyeong per month |
 | Taiwan | NT$ per ping per month |
 | Thailand | ฿ per m² per month |
+| United Kingdom | £ per sq ft per year (high street usually Zone A) |
+| United States | US$ per sq ft per year (often NNN) |
 | Vietnam | US$ per m² per month |
 
 Ping (Taiwan), tsubo (Japan) and pyeong (Korea) are the same unit: **1 = 400⁄121 m² ≈ 3.306 m² ≈ 35.58 sq ft**. Per-day rents convert to per-month at **365 ÷ 12 = 30.42 days**.
+
+**UK Zone A:** a Zone A rate applies only to the front 20 ft (6.1 m) of a shop, and each further 20 ft is valued at half. The app converts a Zone A rate as typed and shows a warning, because the rent per actual sq ft is lower.
 
 ## Install it on your phone
 
@@ -63,7 +68,7 @@ It opens full-screen like a native app. After the first visit it also works offl
 | Data | Source | Updated |
 |---|---|---|
 | Exchange rates | [open.er-api.com](https://open.er-api.com) | The source publishes daily. The app checks for new rates each time it opens, at most every 12 hours. |
-| Rent benchmarks | CBRE, JLL and Cushman & Wakefield research, plus Korea Real Estate Board and reputable press that cites these | The sources publish quarterly. The data is checked for new releases every week. |
+| Rent benchmarks | CBRE, JLL and Cushman & Wakefield research, plus Korea Real Estate Board, Knight Frank (London) and reputable press that cites these | The sources publish quarterly. The data is checked for new releases every week. |
 | Quoting conventions | Broker research, confirmed against local market practice | Reviewed as needed |
 
 Each benchmark in the app links to its original source and shows when it was last checked.

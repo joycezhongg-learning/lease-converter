@@ -14,7 +14,10 @@
   const FX_KEY = "lc-fx-v1";
   async function loadFx() {
     const cached = store.get(FX_KEY);
-    if (cached && Date.now() - cached.fetched < 12 * 3600e3) { FX = cached; return; }
+    const complete = (c) => c && c.rates && Object.keys(CURRENCIES).every((k) => Number.isFinite(c.rates[k]));
+    // Reuse saved rates only if they are fresh AND cover every currency (a newly added
+    // currency, such as GBP, forces a refetch).
+    if (complete(cached) && Date.now() - cached.fetched < 12 * 3600e3) { FX = cached; return; }
     try {
       const r = await fetch("https://open.er-api.com/v6/latest/USD", { cache: "no-store" });
       const j = await r.json();
@@ -24,7 +27,7 @@
       FX = { rates, date: new Date(j.time_last_update_unix * 1000).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }), live: true, fetched: Date.now() };
       store.set(FX_KEY, FX);
     } catch {
-      if (cached) FX = cached;
+      if (cached) FX = { ...cached, rates: { ...FX_FALLBACK.rates, ...cached.rates } };
     }
   }
   function fxNote() {
@@ -34,7 +37,7 @@
   }
 
   // ---------- formatting ----------
-  const SYM = { USD: "US$", CNY: "RMB ", HKD: "HK$", TWD: "NT$", JPY: "¥", KRW: "₩", SGD: "S$", MYR: "RM", THB: "฿", IDR: "Rp", VND: "VND ", PHP: "₱", INR: "₹", AUD: "A$" };
+  const SYM = { USD: "US$", CNY: "RMB ", HKD: "HK$", TWD: "NT$", JPY: "¥", KRW: "₩", SGD: "S$", MYR: "RM", THB: "฿", IDR: "Rp", VND: "VND ", PHP: "₱", INR: "₹", AUD: "A$", GBP: "£" };
   const BIG = new Set(["JPY", "KRW", "IDR", "VND"]);
   function num(v, maxFrac) {
     return new Intl.NumberFormat("en-US", { maximumFractionDigits: maxFrac, minimumFractionDigits: 0 }).format(v);
@@ -203,11 +206,11 @@
 
   // ---------- trends ----------
   function renderTrends() {
-    const rows = MARKETS.map((m) => ({ m, usd: benchUsd(m) })).sort((a, b) => b.usd - a.usd);
+    const rows = MARKETS.map((m) => ({ m, usd: benchUsd(m) })).sort((a, b) => (!!a.m.bench.note - !!b.m.bench.note) || (b.usd - a.usd));
     $("trend-body").innerHTML = rows.map(({ m, usd }) => `<tr>
       <td><a href="#/markets/${m.id}">${m.name}</a><div class="sub">${m.bench.what}</div></td>
-      <td>${benchLocal(m)}</td>
-      <td class="num" data-label="US$ / m² / month">${num(usd, 2)}</td>
+      <td>${benchLocal(m)}${m.bench.note ? `<div class="sub">${m.bench.note}</div>` : ""}</td>
+      <td class="num" data-label="US$ / m² / month">${num(usd, 2)}${m.bench.note ? "*" : ""}</td>
       <td>${trendTag(m.bench)}<div class="sub">${m.bench.when}</div></td>
       <td><a href="${m.bench.url}" target="_blank" rel="noopener">${m.bench.src}</a><div class="sub">${m.bench.freq.split(" (")[0]}</div></td></tr>`).join("");
     $("fxnote2").textContent = fxNote();
