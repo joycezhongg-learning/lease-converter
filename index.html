@@ -14,7 +14,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Lease">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <link rel="stylesheet" href="app.css?v=8">
+  <link rel="stylesheet" href="app.css?v=9">
 </head>
 <body>
   <a class="skip" href="#main">Skip to content</a>
@@ -34,6 +34,7 @@
       <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></symbol>
       <symbol id="i-back" viewBox="0 0 24 24"><path d="M19 12H5M11 6l-6 6 6 6"/></symbol>
       <symbol id="i-swaph" viewBox="0 0 24 24"><path d="M4 8h16M16 4l4 4-4 4M20 16H4M8 12l-4 4 4 4"/></symbol>
+      <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8.5" y="8.5" width="11" height="11" rx="2"/><path d="M15.5 8.5V6a1.5 1.5 0 0 0-1.5-1.5H6A1.5 1.5 0 0 0 4.5 6v8A1.5 1.5 0 0 0 6 15.5h2.5"/></symbol>
       <symbol id="i-chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
     </defs>
   </svg>
@@ -92,7 +93,7 @@
         <section class="outcard res2" aria-labelledby="h-result">
           <div class="rtop">
             <h2 id="h-result" class="rlabel">Result</h2>
-            <span class="rstd" id="rstd"></span>
+            <button type="button" class="copybtn" id="copy" disabled><svg class="ic sm" aria-hidden="true"><use href="#i-copy"/></svg><span id="copy-lbl">Copy</span></button>
           </div>
           <div id="out" aria-live="polite"></div>
           <div class="showas" role="group" aria-label="Show the result in">
@@ -102,6 +103,7 @@
           </div>
           <p class="caution" id="caution" hidden></p>
           <p class="foot" id="fxnote"></p>
+          <p class="vh" id="copy-status" aria-live="polite"></p>
         </section>
       </form>
     </section>
@@ -144,7 +146,7 @@
     <p>All figures are indicative. Verify before advising clients.</p>
   </footer>
 
-  <script src="data.js?v=8"></script>
-  <script src="app.js?v=8"></script>
+  <script src="data.js?v=9"></script>
+  <script src="app.js?v=9"></script>
 </body>
 </html>

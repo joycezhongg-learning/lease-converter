@@ -28,7 +28,8 @@ Lease Converter is a small, fast web app that turns a rent and an area into anot
   - the area in its unit, plus m², sq ft and ping/tsubo/pyeong
   - the total rent, per day, month and year
   - a short warning where the market has a known quirk, such as key money in Korea or gross-area shop listings in Hong Kong
-- **Change how the result is shown** with three toggles: rent per day, month or year; area in m², sq ft or ping/tsubo/pyeong; and the destination's currency, yours, or US$. A "Custom view" tag shows when you've moved off the market's standard.
+- **Change how the result is shown** with three toggles: rent per day, month or year; area in m², sq ft or ping/tsubo/pyeong; and the destination's currency, yours, or US$.
+- **Copy the result** to paste into WhatsApp, WeChat or an email. It copies a short summary of the area, rent and total rent with the exchange rate and its date, and the route and total lines appear in bold where the app supports it.
 
 **Market guides.** For each market: the area unit, quoting period, currency, area basis, what the headline rent includes, retail-specific notes, and the latest benchmark with its source.
 

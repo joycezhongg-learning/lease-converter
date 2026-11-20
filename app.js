@@ -189,6 +189,64 @@
     box.onclick = (e) => { const b = e.target.closest("button"); if (b) onPick(b.dataset.v); };
   }
 
+  // Copied twice over: plain text with WhatsApp-style *bold* for chat apps, and HTML with <b>
+  // for email, Notes and Slack. One fact per line.
+  let copyText = "", copyHtml = "";
+  function summary(c) {
+    if (c.sqm == null && c.destRate == null) return "";
+    const U = S.showUnit, P = S.showPeriod, C = S.showCur, from = c.from, to = c.to;
+    const lines = [];
+    const B = (t) => ({ t, b: true });
+    lines.push(B(`${from.name} → ${to.name}`));
+    if (c.sqm != null) {
+      const a = parse(S.area), conv = c.sqm / UNITS[U].sqm;
+      const extra = U === "sqm" || S.areaUnit === "sqm" ? "" : ` (${areaFmt(c.sqm)} m²)`;
+      lines.push(`Area: ${areaFmt(a)} ${unitLbl(S.areaUnit)} = ${areaFmt(conv)} ${unitLbl(U)}${extra}`);
+    }
+    if (c.destRate != null) {
+      lines.push(`Rent: ${money(parse(S.rent), S.rentCur)} per ${unitLbl(S.rentUnit)} per ${PERIODS[S.rentPeriod].label} = ${money(c.destRate, C)} per ${unitLbl(U)} per ${PERIODS[P].label}`);
+    }
+    if (c.totalUsdMo != null) {
+      const tot = (cur) => c.totalUsdMo * PERIODS[P].months * FX.rates[cur];
+      lines.push(B(`Total rent: ${money(tot(C), C)} per ${PERIODS[P].label}${S.rentCur !== C ? ` (${money(tot(S.rentCur), S.rentCur)})` : ""}`));
+    }
+    if (c.destRate != null && S.rentCur !== C) {
+      const rate = FX.rates[C] / FX.rates[S.rentCur];
+      lines.push(`FX: ${SYM[S.rentCur].trim()}1 = ${SYM[C].trim()}${num(rate, rate < 10 ? 4 : 2)}${FX.live ? ` (${FX.date})` : " (approximate)"}`);
+    }
+    if (to.caution) lines.push(`Note: ${to.caution}`);
+    lines.push("Indicative only. Please verify before relying on these figures.");
+    const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    copyHtml = lines.map((l) => (typeof l === "object" ? `<b>${esc(l.t)}</b>` : esc(l))).join("<br>");
+    return lines.map((l) => (typeof l === "object" ? `*${l.t}*` : l)).join("\n");
+  }
+  async function copyOut(text, html) {
+    try {
+      await navigator.clipboard.write([new ClipboardItem({
+        "text/plain": new Blob([text], { type: "text/plain" }),
+        "text/html": new Blob([html], { type: "text/html" }),
+      })]);
+      return true;
+    } catch {}
+    try { await navigator.clipboard.writeText(text); return true; } catch {}
+    // Fallback for pages without the Clipboard API (plain http, older iOS)
+    const ta = document.createElement("textarea");
+    ta.value = text; ta.setAttribute("readonly", ""); ta.style.cssText = "position:fixed;top:0;left:0;opacity:0;font-size:16px";
+    document.body.append(ta); ta.focus(); ta.setSelectionRange(0, text.length);
+    let ok = false; try { ok = document.execCommand("copy"); } catch {}
+    ta.remove(); return ok;
+  }
+  let copyT = 0;
+  $("copy").addEventListener("click", async () => {
+    if (!copyText) return;
+    const ok = await copyOut(copyText, copyHtml), btn = $("copy");
+    $("copy-lbl").textContent = ok ? "Copied" : "Copy failed";
+    btn.classList.toggle("done", ok);
+    $("copy-status").textContent = ok ? "Result copied" : "Couldn't copy the result";
+    clearTimeout(copyT);
+    copyT = setTimeout(() => { $("copy-lbl").textContent = "Copy"; btn.classList.remove("done"); $("copy-status").textContent = ""; }, 2000);
+  });
+
   function render() {
     const c = compute(), to = c.to;
     const U = S.showUnit, P = S.showPeriod, C = S.showCur;
@@ -233,8 +291,8 @@
     // "show as" controls
     const isStd = U === to.unit && P === to.period && C === to.currency;
     $("h-result").textContent = `In ${to.name}`;
-    $("rstd").textContent = isStd ? "Market standard" : "Custom view";
-    $("rstd").classList.toggle("custom", !isStd);
+    copyText = summary(c);
+    $("copy").disabled = !copyText;
     seg("seg-period", ["day", "month", "year"].map((p) => [p, p[0].toUpperCase() + p.slice(1)]), P, (v) => { S.showPeriod = v; render(); });
     const units = ["sqm", "sqft"];
     const pf = PINGS.has(U) ? U : PINGS.has(to.unit) ? to.unit : null;

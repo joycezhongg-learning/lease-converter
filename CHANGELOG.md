@@ -2,6 +2,12 @@
 
 Releases are numbered by the app's cache version (`VERSION` in `sw.js`). Weekly benchmark updates change only the figures in `data.js` and aren't listed here.
 
+## v9, 20 Nov 2026: copy the result
+
+- **Copy button** on the result card, replacing the "Market standard" tag. It copies a short summary to paste into a chat or an email: the route, area, rent, total rent, the exchange rate with its date in brackets, the market's warning, and a one-line disclaimer. It copies what's on screen, so it follows the Per, Area in and Currency toggles. The route and total-rent lines are bold in WhatsApp and Telegram (`*bold*`), and in email, Notes and Slack (formatted text). WeChat and SMS show the asterisks as typed.
+- The unit labels above Area and Rent are now the same size and colour as the field labels, and sit just inside the field's rounded corner.
+- Field text and wheel lists are now 16px, the smallest size at which iPhone Safari doesn't zoom when a field is tapped.
+
 ## v8, 20 Nov 2026: mobile-first Convert screen
 
 Brokers mostly use the app on the road, so the Convert screen was rebuilt for phones.
