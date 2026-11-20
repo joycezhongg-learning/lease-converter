@@ -14,7 +14,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Lease">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <link rel="stylesheet" href="app.css?v=7">
+  <link rel="stylesheet" href="app.css?v=8">
 </head>
 <body>
   <a class="skip" href="#main">Skip to content</a>
@@ -33,6 +33,7 @@
       <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5.5M12 7.6v.4"/></symbol>
       <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></symbol>
       <symbol id="i-back" viewBox="0 0 24 24"><path d="M19 12H5M11 6l-6 6 6 6"/></symbol>
+      <symbol id="i-swaph" viewBox="0 0 24 24"><path d="M4 8h16M16 4l4 4-4 4M20 16H4M8 12l-4 4 4 4"/></symbol>
       <symbol id="i-chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
     </defs>
   </svg>
@@ -50,74 +51,59 @@
 
     <!-- CONVERT -->
     <section id="view-convert" class="view" aria-labelledby="h-convert">
-      <div class="intro">
-        <h1 id="h-convert">Retail Rent &amp; Area Converter</h1>
-        <p class="lede">Convert a rent and floor area into how another market quotes it, across 15 markets in Asia-Pacific, the US and the UK.</p>
-      </div>
+      <h1 id="h-convert" class="vh">Convert retail rent and area</h1>
 
-      <form class="conv" id="conv" autocomplete="off" novalidate>
-        <fieldset class="side" id="side-from">
-          <legend>From</legend>
-          <div class="field">
-            <label for="from-market"><svg class="ic sm"><use href="#i-pin"/></svg>Market</label>
-            <select id="from-market"></select>
+      <form class="conv2" id="conv" autocomplete="off" novalidate>
+        <div class="picker" role="group" aria-label="Markets">
+          <div class="wcol">
+            <div class="wcap" id="wl-from">From</div>
+            <div class="wheelbox"><div class="wheel" id="wheel-from" role="listbox" tabindex="0" aria-labelledby="wl-from"></div></div>
           </div>
-          <div class="field">
-            <label for="area"><svg class="ic sm"><use href="#i-area"/></svg>Area</label>
-            <div class="combo">
-              <input id="area" type="text" inputmode="decimal" placeholder="e.g. 1,000">
-              <select id="from-unit" aria-label="Area unit (from)"></select>
-            </div>
-          </div>
-          <div class="field">
-            <label for="rent"><svg class="ic sm"><use href="#i-coin"/></svg>Rent <span class="opt">optional</span></label>
-            <div class="combo">
-              <select id="from-cur" aria-label="Currency (from)" class="cur"></select>
-              <input id="rent" type="text" inputmode="decimal" placeholder="Rate">
-            </div>
-            <div class="per" role="group" aria-label="Rent is quoted per">
-              <span class="nobr"><span>per</span>
-              <select id="from-runit" aria-label="Rent area unit (from)"></select></span>
-              <span class="nobr"><span>per</span>
-              <select id="from-period" aria-label="Rent period (from)"></select></span>
-            </div>
-          </div>
-        </fieldset>
-
-        <div class="swapwrap">
-          <button type="button" class="swap" id="swap" aria-label="Swap from and to markets">
-            <svg class="ic"><use href="#i-swap"/></svg>
+          <button type="button" class="swap" id="swap" aria-label="Swap From and To markets">
+            <svg class="ic"><use href="#i-swaph"/></svg>
           </button>
+          <div class="wcol">
+            <div class="wcap" id="wl-to">To</div>
+            <div class="wheelbox"><div class="wheel" id="wheel-to" role="listbox" tabindex="0" aria-labelledby="wl-to"></div></div>
+          </div>
         </div>
 
-        <div class="side outcard">
-        <fieldset class="toset" id="side-to">
-          <legend>To</legend>
-          <div class="field">
-            <label for="to-market"><svg class="ic sm"><use href="#i-pin"/></svg>Market</label>
-            <select id="to-market"></select>
+        <div class="inputs">
+          <div class="fld">
+            <label for="area"><span>Area</span><span class="u" id="area-u">sq ft</span></label>
+            <div class="box"><input id="area" type="text" inputmode="decimal" placeholder="e.g. 1,000" enterkeyhint="next"></div>
           </div>
-          <div class="field">
-            <span class="label-like" id="show-lbl"><svg class="ic sm"><use href="#i-cal"/></svg>Show as</span>
-            <div class="per tight" role="group" aria-labelledby="show-lbl">
-              <select id="to-cur" aria-label="Currency (to)" class="cur"></select>
-              <span class="nobr"><span>per</span>
-              <select id="to-runit" aria-label="Area unit (to)"></select></span>
-              <span class="nobr"><span>per</span>
-              <select id="to-period" aria-label="Rent period (to)"></select></span>
-            </div>
-            <p class="hint" id="to-conv"></p>
+          <div class="fld">
+            <label for="rent"><span>Rent</span><span class="u" id="rent-u">/ sq ft / mo</span></label>
+            <div class="box"><span class="pre" id="rent-cur" aria-hidden="true">S$</span><input id="rent" type="text" inputmode="decimal" placeholder="Optional" enterkeyhint="done"></div>
           </div>
-        </fieldset>
-        <section class="result" aria-labelledby="h-result">
-          <h2 id="h-result" class="rlabel">Result</h2>
+        </div>
+        <div class="quoted">
+          <span id="quoted-txt"></span>
+          <button type="button" class="link" id="quoted-btn" aria-expanded="false" aria-controls="from-adv">Change</button>
+        </div>
+        <div class="adv" id="from-adv" hidden>
+          <label class="wide">Area unit<select id="area-unit"></select></label>
+          <label class="wide">Rent per<select id="rent-unit"></select></label>
+          <label>Rent currency<select id="rent-cur-sel"></select></label>
+          <label>Rent period<select id="rent-period"></select></label>
+        </div>
+
+        <section class="outcard res2" aria-labelledby="h-result">
+          <div class="rtop">
+            <h2 id="h-result" class="rlabel">Result</h2>
+            <span class="rstd" id="rstd"></span>
+          </div>
           <div id="out" aria-live="polite"></div>
+          <div class="showas" role="group" aria-label="Show the result in">
+            <div class="sa-row"><span class="sa-k" id="sa-p">Rent per</span><div class="seg" id="seg-period" role="group" aria-labelledby="sa-p"></div></div>
+            <div class="sa-row"><span class="sa-k" id="sa-u">Area in</span><div class="seg" id="seg-unit" role="group" aria-labelledby="sa-u"></div></div>
+            <div class="sa-row"><span class="sa-k" id="sa-c">Currency</span><div class="seg" id="seg-cur" role="group" aria-labelledby="sa-c"></div></div>
+          </div>
           <p class="caution" id="caution" hidden></p>
           <p class="foot" id="fxnote"></p>
         </section>
-        </div>
       </form>
-
     </section>
 
     <!-- MARKETS -->
@@ -158,7 +144,7 @@
     <p>All figures are indicative. Verify before advising clients.</p>
   </footer>
 
-  <script src="data.js?v=7"></script>
-  <script src="app.js?v=7"></script>
+  <script src="data.js?v=8"></script>
+  <script src="app.js?v=8"></script>
 </body>
 </html>

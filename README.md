@@ -19,12 +19,16 @@ Lease Converter is a small, fast web app that turns a rent and an area into anot
 
 ## What it does
 
-**Convert.** Enter a market, an area and (optionally) a rent. Pick a destination market and you get:
+**Convert.** Built for one-handed use on a phone:
 
-- the area in the destination's unit (plus m², sq ft and ping/tsubo/pyeong)
-- the rent as the destination market would quote it
-- the total monthly and yearly rent, in both currencies
-- a short warning where the market has a known quirk, such as key money in Korea or gross-area shop listings in Hong Kong
+- **Pick markets with two scroll wheels**, From on the left and To on the right, like the iPhone's language picker. The app remembers your last From market, so most of the time you only flick To. The swap button between them reverses the conversion and carries your figures across.
+- **Type the area and rent** side by side. Each market's usual unit, currency and period are filled in for you. If a quote uses different terms, tap **Change** to set them.
+- **Read the result** in the destination market's own terms:
+  - the rent as that market would quote it
+  - the area in its unit, plus m², sq ft and ping/tsubo/pyeong
+  - the total rent, per day, month and year
+  - a short warning where the market has a known quirk, such as key money in Korea or gross-area shop listings in Hong Kong
+- **Change how the result is shown** with three toggles: rent per day, month or year; area in m², sq ft or ping/tsubo/pyeong; and the destination's currency, yours, or US$. A "Custom view" tag shows when you've moved off the market's standard.
 
 **Market guides.** For each market: the area unit, quoting period, currency, area basis, what the headline rent includes, retail-specific notes, and the latest benchmark with its source.
 
@@ -81,6 +85,7 @@ Plain HTML, CSS and JavaScript, with no framework, build step or dependencies.
 
 ```
 index.html             Page structure and the three views (Convert, Markets, Trends)
+CHANGELOG.md           What changed in each release
 app.css                Styles, light and dark themes, responsive layout
 app.js                 Conversion logic, routing, exchange-rate loading
 data.js                Market conventions and rent benchmarks (the file the weekly update edits)

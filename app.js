@@ -55,103 +55,217 @@
   function areaFmt(v) { return num(v, v < 100 ? 2 : v < 10000 ? 1 : 0); }
   const parse = (s) => { const n = parseFloat(String(s).replace(/[,\s_]/g, "")); return Number.isFinite(n) && n >= 0 ? n : null; };
 
-  // ---------- form setup ----------
+  // ---------- convert: state ----------
+  const ROW = 44; // wheel row height; must match --row in app.css
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const PINGS = new Set(["ping", "tsubo", "pyeong"]);
+  const TZ = { "Asia/Singapore": "sg", "Asia/Tokyo": "jp", "Asia/Hong_Kong": "hk", "Asia/Shanghai": "cn", "Asia/Taipei": "tw",
+    "Asia/Seoul": "kr", "Asia/Kuala_Lumpur": "my", "Asia/Bangkok": "th", "Asia/Jakarta": "id", "Asia/Manila": "ph",
+    "Asia/Kolkata": "in", "Asia/Calcutta": "in", "Asia/Ho_Chi_Minh": "vn", "Asia/Saigon": "vn", "Europe/London": "uk" };
+  function guessHome() {
+    try {
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
+      if (TZ[tz]) return TZ[tz];
+      if (tz.startsWith("Australia/")) return "au";
+      if (tz.startsWith("America/")) return "us";
+    } catch {}
+    return "sg";
+  }
+
+  const S = {};
+  function fromDefaults() { const m = byId[S.from]; Object.assign(S, { areaUnit: m.unit, rentCur: m.currency, rentUnit: m.unit, rentPeriod: m.period }); }
+  function toDefaults() { const m = byId[S.to]; Object.assign(S, { showUnit: m.unit, showPeriod: m.period, showCur: m.currency }); }
+
+  const STATE_KEY = "lc-form-v2";
+  const saved = store.get(STATE_KEY), old = store.get("lc-form-v1");
+  if (saved && byId[saved.from] && byId[saved.to]) Object.assign(S, saved);
+  else if (old && byId[old.fromMarket] && byId[old.toMarket]) {
+    Object.assign(S, { from: old.fromMarket, to: old.toMarket, area: old.area || "", rent: old.rent || "",
+      areaUnit: old.fromUnit, rentCur: old.fromCur, rentUnit: old.fromRUnit, rentPeriod: old.fromPeriod,
+      showCur: old.toCur, showUnit: old.toRUnit, showPeriod: old.toPeriod });
+  } else {
+    S.from = guessHome(); S.to = S.from === "jp" ? "sg" : "jp"; S.area = ""; S.rent = "";
+    fromDefaults(); toDefaults();
+  }
+  const save = () => store.set(STATE_KEY, S);
+
+  // ---------- convert: inputs ----------
   const el = {
-    fromMarket: $("from-market"), toMarket: $("to-market"), area: $("area"), fromUnit: $("from-unit"),
-    rent: $("rent"), fromCur: $("from-cur"), fromRUnit: $("from-runit"), fromPeriod: $("from-period"),
-    toCur: $("to-cur"), toRUnit: $("to-runit"), toPeriod: $("to-period"),
+    area: $("area"), rent: $("rent"), areaUnit: $("area-unit"), rentCurSel: $("rent-cur-sel"),
+    rentUnit: $("rent-unit"), rentPeriod: $("rent-period"),
   };
   const opt = (v, t) => { const o = document.createElement("option"); o.value = v; o.textContent = t; return o; };
-  [el.fromMarket, el.toMarket].forEach((s) => MARKETS.forEach((m) => s.append(opt(m.id, m.name))));
-  [el.fromUnit, el.fromRUnit, el.toRUnit].forEach((s) => Object.entries(UNITS).forEach(([k, u]) => s.append(opt(k, u.label))));
-  [el.fromPeriod, el.toPeriod].forEach((s) => Object.entries(PERIODS).forEach(([k, p]) => s.append(opt(k, p.label))));
-  [el.fromCur, el.toCur].forEach((s) => Object.keys(CURRENCIES).forEach((c) => s.append(opt(c, c))));
+  // ping, tsubo and pyeong are the same 3.306 m² unit, so the dropdowns list them once.
+  const UNIT_OPTS = [["sqm", "m²"], ["sqft", "sq ft"], ["ping", "ping / tsubo / pyeong"]];
+  [el.areaUnit, el.rentUnit].forEach((s) => UNIT_OPTS.forEach(([k, t]) => s.append(opt(k, t))));
+  const toOpt = (u) => (PINGS.has(u) ? "ping" : u);
+  const fromOpt = (v) => (v === "ping" && PINGS.has(byId[S.from].unit) ? byId[S.from].unit : v);
+  Object.entries(PERIODS).forEach(([k, p]) => el.rentPeriod.append(opt(k, p.label)));
+  Object.keys(CURRENCIES).forEach((c) => el.rentCurSel.append(opt(c, `${c} · ${CURRENCIES[c]}`)));
+  el.area.value = S.area || ""; el.rent.value = S.rent || "";
+  el.area.addEventListener("input", () => { S.area = el.area.value; render(); });
+  el.rent.addEventListener("input", () => { S.rent = el.rent.value; render(); });
+  el.area.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); el.rent.focus(); } });
+  el.rent.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); el.rent.blur(); } });
+  el.areaUnit.addEventListener("change", () => { S.areaUnit = fromOpt(el.areaUnit.value); render(); });
+  el.rentCurSel.addEventListener("change", () => { S.rentCur = el.rentCurSel.value; render(); });
+  el.rentUnit.addEventListener("change", () => { S.rentUnit = fromOpt(el.rentUnit.value); render(); });
+  el.rentPeriod.addEventListener("change", () => { S.rentPeriod = el.rentPeriod.value; render(); });
+  $("quoted-btn").addEventListener("click", (e) => {
+    const adv = $("from-adv"), open = adv.hidden;
+    adv.hidden = !open; e.currentTarget.setAttribute("aria-expanded", String(open));
+    e.currentTarget.textContent = open ? "Hide" : "Change";
+  });
 
-  function applyMarket(side) {
-    const m = byId[(side === "from" ? el.fromMarket : el.toMarket).value];
-    if (side === "from") {
-      el.fromUnit.value = m.unit; el.fromRUnit.value = m.unit; el.fromPeriod.value = m.period; el.fromCur.value = m.currency;
-    } else {
-      el.toRUnit.value = m.unit; el.toPeriod.value = m.period; el.toCur.value = m.currency;
+  // ---------- convert: iOS-style wheels ----------
+  // Three rows visible. The middle row sits exactly inside the selection band
+  // because the list is padded by one row top and bottom and snaps per row.
+  function makeWheel(root, onPick) {
+    root.innerHTML = MARKETS.map((m, i) => `<div class="wi" role="option" id="${root.id}-${m.id}" data-i="${i}" aria-selected="false">${m.name}</div>`).join("");
+    const items = [...root.children];
+    let idx = 0, raf = 0, settleT = 0;
+    const clamp = (i) => Math.max(0, Math.min(items.length - 1, i));
+    function paint() {
+      raf = 0;
+      const st = root.scrollTop;
+      items.forEach((it, i) => {
+        const d = (i * ROW - st) / ROW, a = Math.min(Math.abs(d), 2.5);
+        it.style.transform = `rotateX(${(-d * 24).toFixed(2)}deg) scale(${(1 - 0.07 * a).toFixed(3)})`;
+        it.style.opacity = (1 - 0.42 * a).toFixed(3);
+      });
     }
+    function mark(i) {
+      idx = i;
+      items.forEach((it, j) => it.setAttribute("aria-selected", String(j === i)));
+      root.setAttribute("aria-activedescendant", items[i].id);
+    }
+    function settle() {
+      const i = clamp(Math.round(root.scrollTop / ROW));
+      if (i !== idx) { mark(i); onPick(MARKETS[i].id); }
+    }
+    const go = (i) => root.scrollTo({ top: clamp(i) * ROW, behavior: reduceMotion ? "auto" : "smooth" });
+    root.addEventListener("scroll", () => {
+      if (!raf) raf = requestAnimationFrame(paint);
+      clearTimeout(settleT); settleT = setTimeout(settle, 160);
+    }, { passive: true });
+    if ("onscrollend" in window) root.addEventListener("scrollend", () => { clearTimeout(settleT); settle(); });
+    items.forEach((it, i) => it.addEventListener("click", () => go(i)));
+    root.addEventListener("keydown", (e) => {
+      const k = { ArrowUp: -1, ArrowDown: 1, PageUp: -3, PageDown: 3, Home: -99, End: 99 }[e.key];
+      if (k == null) return;
+      e.preventDefault(); go(idx + k);
+    });
+    return {
+      select(id, smooth) { const i = MARKETS.findIndex((m) => m.id === id); mark(i); smooth ? go(i) : (root.scrollTop = i * ROW); paint(); },
+      sync() { root.scrollTop = idx * ROW; paint(); },
+    };
   }
+  const wheelFrom = makeWheel($("wheel-from"), (id) => { S.from = id; fromDefaults(); render(); });
+  const wheelTo = makeWheel($("wheel-to"), (id) => { S.to = id; toDefaults(); render(); });
+  wheelFrom.select(S.from); wheelTo.select(S.to);
+  function syncWheels() { wheelFrom.sync(); wheelTo.sync(); }
 
-  const saved = store.get("lc-form-v1");
-  if (saved) {
-    Object.entries(saved).forEach(([k, v]) => { if (el[k] && v != null) el[k].value = v; });
-  } else {
-    el.fromMarket.value = "sg"; el.toMarket.value = "jp";
-    applyMarket("from"); applyMarket("to");
-  }
-  const save = () => store.set("lc-form-v1", Object.fromEntries(Object.entries(el).map(([k, e]) => [k, e.value])));
-
-  // ---------- compute & render ----------
+  // ---------- convert: compute & render ----------
   function compute() {
-    const from = byId[el.fromMarket.value], to = byId[el.toMarket.value];
-    const area = parse(el.area.value), rent = parse(el.rent.value);
-    const r = FX.rates;
+    const from = byId[S.from], to = byId[S.to], r = FX.rates;
+    const area = parse(S.area), rent = parse(S.rent);
     const out = { from, to };
-    if (area != null) out.sqm = area * UNITS[el.fromUnit.value].sqm;
+    if (area != null) out.sqm = area * UNITS[S.areaUnit].sqm;
     if (rent != null) {
-      out.usdSqmMo = rent / UNITS[el.fromRUnit.value].sqm / PERIODS[el.fromPeriod.value].months / r[el.fromCur.value];
-      out.destRate = out.usdSqmMo * r[el.toCur.value] * UNITS[el.toRUnit.value].sqm * PERIODS[el.toPeriod.value].months;
+      out.usdSqmMo = rent / UNITS[S.rentUnit].sqm / PERIODS[S.rentPeriod].months / r[S.rentCur];
+      out.destRate = out.usdSqmMo * r[S.showCur] * UNITS[S.showUnit].sqm * PERIODS[S.showPeriod].months;
     }
-    if (out.sqm != null && out.usdSqmMo != null) {
-      out.totalUsdMo = out.usdSqmMo * out.sqm;
-    }
+    if (out.sqm != null && out.usdSqmMo != null) out.totalUsdMo = out.usdSqmMo * out.sqm;
     return out;
   }
 
   const ico = (id) => `<svg class="ic" aria-hidden="true"><use href="#${id}"/></svg>`;
+  const unitLbl = (u) => UNITS[u].label;
+  const perLbl = { day: "day", month: "mo", year: "yr" };
+
+  function seg(id, options, current, onPick) {
+    const box = $(id);
+    box.innerHTML = options.map(([v, t]) => `<button type="button" data-v="${v}" aria-pressed="${v === current}">${t}</button>`).join("");
+    box.onclick = (e) => { const b = e.target.closest("button"); if (b) onPick(b.dataset.v); };
+  }
+
   function render() {
-    const c = compute();
-    const toU = el.toRUnit.value, toCur = el.toCur.value, toP = el.toPeriod.value, fromCur = el.fromCur.value;
+    const c = compute(), to = c.to;
+    const U = S.showUnit, P = S.showPeriod, C = S.showCur;
+
+    // inputs
+    $("area-u").textContent = unitLbl(S.areaUnit);
+    $("rent-u").textContent = `/ ${unitLbl(S.rentUnit)} / ${perLbl[S.rentPeriod]}`;
+    $("rent-cur").textContent = SYM[S.rentCur].trim();
+    el.areaUnit.value = toOpt(S.areaUnit); el.rentCurSel.value = S.rentCur; el.rentUnit.value = toOpt(S.rentUnit); el.rentPeriod.value = S.rentPeriod;
+    const fm = c.from;
+    const fromStd = S.areaUnit === fm.unit && S.rentUnit === fm.unit && S.rentPeriod === fm.period && S.rentCur === fm.currency;
+    $("quoted-txt").textContent = fromStd
+      ? `${fm.name} standard: ${SYM[S.rentCur].trim()} per ${unitLbl(S.rentUnit)} per ${PERIODS[S.rentPeriod].label}.`
+      : `Entered as ${SYM[S.rentCur].trim()} per ${unitLbl(S.rentUnit)} per ${PERIODS[S.rentPeriod].label}, area in ${unitLbl(S.areaUnit)}.`;
+
+    // result
     const rows = [];
+    if (c.destRate != null) {
+      const plain = C === "USD" && U === "sqm" && P === "month";
+      rows.push(`<div class="row">${ico("i-coin")}<div><div class="k">Rent</div>
+        <div class="v">${money(c.destRate, C)} <small>per ${unitLbl(U)} per ${PERIODS[P].label}</small></div>
+        ${plain ? "" : `<div class="s">≈ US$${num(c.usdSqmMo, 2)} per m² per month</div>`}</div></div>`);
+    }
     if (c.sqm != null) {
-      const others = ["sqm", "sqft", "ping"].filter((u) => u !== toU && !(UNITS[u].sqm === UNITS[toU].sqm))
+      const others = ["sqm", "sqft", "ping"].filter((u) => UNITS[u].sqm !== UNITS[U].sqm)
         .map((u) => `${areaFmt(c.sqm / UNITS[u].sqm)} ${u === "ping" ? "ping / tsubo / pyeong" : UNITS[u].label}`);
       rows.push(`<div class="row">${ico("i-area")}<div><div class="k">Area</div>
-        <div class="v">${areaFmt(c.sqm / UNITS[toU].sqm)} <small>${UNITS[toU].label}</small></div>
+        <div class="v">${areaFmt(c.sqm / UNITS[U].sqm)} <small>${unitLbl(U)}</small></div>
         <div class="s">${others.join(" · ")}</div></div></div>`);
     }
-    if (c.destRate != null) {
-      rows.push(`<div class="row">${ico("i-coin")}<div><div class="k">Rent, as quoted in ${c.to.name}</div>
-        <div class="v">${money(c.destRate, toCur)} <small>per ${UNITS[toU].label} per ${PERIODS[toP].label}</small></div>
-        <div class="s">≈ US$${num(c.usdSqmMo, 2)} per m² per month</div></div></div>`);
-    }
     if (c.totalUsdMo != null) {
-      const tDest = c.totalUsdMo * FX.rates[toCur], tFrom = c.totalUsdMo * FX.rates[fromCur];
+      const tot = (p, cur) => c.totalUsdMo * PERIODS[p].months * FX.rates[cur];
+      const otherP = ["day", "month", "year"].filter((p) => p !== P).map((p) => `${money(tot(p, C), C)} per ${PERIODS[p].label}`);
+      if (S.rentCur !== C) otherP.push(`${money(tot(P, S.rentCur), S.rentCur)} per ${PERIODS[P].label}`);
       rows.push(`<div class="row">${ico("i-cal")}<div><div class="k">Total rent</div>
-        <div class="v">${money(tDest, toCur)} <small>per month</small></div>
-        <div class="s">${money(tDest * 12, toCur)} per year${fromCur !== toCur ? ` · ${money(tFrom, fromCur)} per month` : ""}</div></div></div>`);
+        <div class="v">${money(tot(P, C), C)} <small>per ${PERIODS[P].label}</small></div>
+        <div class="s">${otherP.join(" · ")}</div></div></div>`);
     }
     $("out").innerHTML = rows.length ? rows.join("")
-      : `<p class="empty">Enter an area, a rent, or both to see the conversion.</p>`;
+      : `<p class="empty">Enter an area, a rent, or both to see how ${to.name} would quote it.</p>`;
 
+    // "show as" controls
+    const isStd = U === to.unit && P === to.period && C === to.currency;
+    $("h-result").textContent = `In ${to.name}`;
+    $("rstd").textContent = isStd ? "Market standard" : "Custom view";
+    $("rstd").classList.toggle("custom", !isStd);
+    seg("seg-period", ["day", "month", "year"].map((p) => [p, p[0].toUpperCase() + p.slice(1)]), P, (v) => { S.showPeriod = v; render(); });
+    const units = ["sqm", "sqft"];
+    const pf = PINGS.has(U) ? U : PINGS.has(to.unit) ? to.unit : null;
+    if (pf) units.push(pf);
+    seg("seg-unit", units.map((u) => [u, unitLbl(u)]), U, (v) => { S.showUnit = v; render(); });
+    const curs = [...new Set([to.currency, S.rentCur, "USD"])];
+    if (!curs.includes(C)) curs.push(C);
+    seg("seg-cur", curs.map((k) => [k, k]), C, (v) => { S.showCur = v; render(); });
     const cautions = [];
-    if (c.to.caution) cautions.push(c.to.caution);
-    if (c.from.caution && c.from.id !== c.to.id) cautions.push(c.from.caution);
+    if (to.caution) cautions.push(to.caution);
+    if (c.from.caution && c.from.id !== to.id) cautions.push(c.from.caution);
     const cau = $("caution");
     cau.hidden = !cautions.length;
-    cau.innerHTML = cautions.length ? `${ico("i-info")}<span>${cautions.join(" ")} <a href="#/markets/${c.to.id}">${c.to.name} guide</a></span>` : "";
-    $("to-conv").textContent = `${c.to.name} usually quotes ${c.to.quote}.`;
+    cau.innerHTML = cautions.length ? `${ico("i-info")}<span>${cautions.join(" ")} <a href="#/markets/${to.id}">${to.name} guide</a></span>` : "";
     $("fxnote").textContent = fxNote();
     save();
   }
-
-  ["fromMarket", "toMarket"].forEach((k) => el[k].addEventListener("change", () => { applyMarket(k === "fromMarket" ? "from" : "to"); render(); }));
-  el.fromUnit.addEventListener("change", () => { el.fromRUnit.value = el.fromUnit.value; render(); });
-  Object.values(el).forEach((e) => e.addEventListener(e.tagName === "INPUT" ? "input" : "change", render));
   $("conv").addEventListener("submit", (e) => e.preventDefault());
 
+  // Swap: the result becomes the new input, so nothing is lost.
   $("swap").addEventListener("click", () => {
     const c = compute();
-    const prev = Object.fromEntries(Object.entries(el).map(([k, e]) => [k, e.value]));
-    el.fromMarket.value = prev.toMarket; el.toMarket.value = prev.fromMarket;
-    el.fromUnit.value = prev.toRUnit; el.fromRUnit.value = prev.toRUnit; el.fromPeriod.value = prev.toPeriod; el.fromCur.value = prev.toCur;
-    el.toRUnit.value = prev.fromRUnit; el.toPeriod.value = prev.fromPeriod; el.toCur.value = prev.fromCur;
-    if (c.sqm != null) el.area.value = String(+(c.sqm / UNITS[prev.toRUnit].sqm).toPrecision(7));
-    if (c.destRate != null) el.rent.value = String(+c.destRate.toPrecision(7));
+    const p = { ...S };
+    Object.assign(S, {
+      from: p.to, to: p.from,
+      areaUnit: p.showUnit, rentUnit: p.showUnit, rentPeriod: p.showPeriod, rentCur: p.showCur,
+      showUnit: p.rentUnit, showPeriod: p.rentPeriod, showCur: p.rentCur,
+    });
+    if (c.sqm != null) S.area = el.area.value = String(+(c.sqm / UNITS[S.areaUnit].sqm).toPrecision(7));
+    if (c.destRate != null) S.rent = el.rent.value = String(+c.destRate.toPrecision(7));
+    wheelFrom.select(S.from, true); wheelTo.select(S.to, true);
     render();
   });
 
@@ -201,7 +315,7 @@
       </section>
     </article>`;
     const go = document.querySelector("[data-convert]");
-    go.addEventListener("click", () => { el.toMarket.value = m.id; applyMarket("to"); render(); });
+    go.addEventListener("click", () => { S.to = m.id; toDefaults(); wheelTo.select(m.id); render(); });
   }
 
   // ---------- trends ----------
@@ -234,7 +348,7 @@
     });
     if (v === "market") renderMarket(b);
     if (v === "trends") renderTrends();
-    if (v === "convert") render();
+    if (v === "convert") { render(); requestAnimationFrame(syncWheels); }
     const titles = { convert: "Lease Converter", markets: "Market Guides · Lease Converter", trends: "Latest Retail Rents · Lease Converter", market: `${byId[b]?.name ?? "Market"} · Lease Converter` };
     document.title = titles[v];
     if (route.ran) { window.scrollTo(0, 0); $("main").focus({ preventScroll: true }); }
