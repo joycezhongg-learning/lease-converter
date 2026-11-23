@@ -84,9 +84,9 @@ window.LC_DATA = (() => {
       included: "Base rent and service charge are quoted separately.",
       extras: ["High-end malls command far higher rents than the citywide average."],
       caution: "Jakarta quotes base rent and service charge separately. Add the service charge before comparing.",
-      bench: { value: 334800, unit: "sqm", period: "month", freq: "Quarterly", what: "Jakarta mall average, all grades", src: "CBRE", when: "Q2 2026", change: "Edging up", trend: "up",
-               url: "https://mktgdocs.cbre.com/2299/5c417c89-3e48-4d2b-afae-d240f758524f-708398475/_CBRE__Jakarta_Retail_Figures_.pdf",
-               extra: "High-end malls: about Rp880,000 per m² per month." },
+      bench: { value: 331800, unit: "sqm", period: "month", freq: "Quarterly", what: "Jakarta mall average, all grades", src: "CBRE", when: "Q3 2026", change: "−0.9% q-o-q", trend: "down",
+               url: "https://mktgdocs.cbre.com/2299/2d227623-6710-4577-9bc5-0f4b881010dc-2062212812/_CBRE__Jakarta_Retail_Market_O.pdf",
+               extra: "High-end malls: about Rp880,000 per m² per month (unchanged, Q3 2026)." },
     },
     {
       id: "jp", name: "Japan", currency: "JPY", unit: "tsubo", period: "month",
@@ -126,8 +126,8 @@ window.LC_DATA = (() => {
       included: "Gross rent, including the service charge.",
       extras: ["Ground-floor (first-storey) rents are quoted separately from whole-mall averages.", "Turnover rent is common in malls."],
       caution: null,
-      bench: { value: 38.7, unit: "sqft", period: "month", freq: "Quarterly", what: "Orchard Road prime", src: "CBRE", when: "Q1 2026", change: "+0.5% q-o-q", trend: "up",
-               url: "https://mktgdocs.cbre.com/2299/444570c0-6d6d-4179-a092-a52b34df83eb-1546489515/Figures_SG_Q1_2026.pdf",
+      bench: { value: 39.05, unit: "sqft", period: "month", freq: "Quarterly", what: "Orchard Road prime", src: "CBRE", when: "Q3 2026", change: "+0.4% q-o-q", trend: "up",
+               url: "https://mktgdocs.cbre.com/2299/03b9dc6e-46d6-4f84-98b1-5f380f02a84b-1153462505/Figures_SG_Q3_2026.pdf",
                extra: "Orchard first-storey: S$41.95 psf per month (Realion, Q1 2026)." },
     },
     {
@@ -197,7 +197,7 @@ window.LC_DATA = (() => {
   ];
 
   // Date the benchmark figures were last checked against new releases.
-  const CHECKED = "18 Nov 2026";
+  const CHECKED = "23 Nov 2026";
 
   return { UNITS, PERIODS, FX_FALLBACK, CURRENCIES, MARKETS, CHECKED };
 })();
