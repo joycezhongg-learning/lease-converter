@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Lease Converter</title>
   <meta name="description" content="Convert retail rents and areas across Asia-Pacific, US and UK markets: m², sq ft, ping, tsubo, pyeong, per day, month or year, in local currency.">
-  <meta name="theme-color" content="#f5f5f5" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#111111" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f7f7f5" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#191919" media="(prefers-color-scheme: dark)">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -14,7 +14,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Lease">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <link rel="stylesheet" href="app.css?v=10">
+  <link rel="stylesheet" href="app.css?v=11">
 </head>
 <body>
   <a class="skip" href="#main">Skip to content</a>
@@ -36,6 +36,8 @@
       <symbol id="i-swaph" viewBox="0 0 24 24"><path d="M4 8h16M16 4l4 4-4 4M20 16H4M8 12l-4 4 4 4"/></symbol>
       <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8.5" y="8.5" width="11" height="11" rx="2"/><path d="M15.5 8.5V6a1.5 1.5 0 0 0-1.5-1.5H6A1.5 1.5 0 0 0 4.5 6v8A1.5 1.5 0 0 0 6 15.5h2.5"/></symbol>
       <symbol id="i-chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+      <symbol id="i-down" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+      <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.3 2.4 3.5 5.2 3.5 8.5s-1.2 6.1-3.5 8.5c-2.3-2.4-3.5-5.2-3.5-8.5s1.2-6.1 3.5-8.5z"/></symbol>
     </defs>
   </svg>
 
@@ -45,6 +47,19 @@
       <a href="#/" data-nav="convert">Convert</a>
       <a href="#/markets" data-nav="markets">Markets</a>
       <a href="#/trends" data-nav="trends">Trends</a>
+      <!-- App language. Only English exists so far; the others are placeholders. -->
+      <div class="langwrap">
+        <button type="button" class="gbtn" id="lang-btn" aria-expanded="false" aria-controls="lang-menu" aria-label="App language: English">
+          <svg class="ic"><use href="#i-globe"/></svg>
+        </button>
+        <div class="langmenu" id="lang-menu" role="group" aria-labelledby="lang-h" hidden>
+          <div class="lm-h" id="lang-h">App language</div>
+          <button type="button" class="lm-it" lang="en" aria-current="true"><span>English</span><span class="lm-chk" aria-hidden="true">✓</span></button>
+          <button type="button" class="lm-it" lang="zh-Hans" disabled><span>简体中文</span><small lang="en">Coming soon</small></button>
+          <button type="button" class="lm-it" lang="zh-Hant" disabled><span>繁體中文</span><small lang="en">Coming soon</small></button>
+          <button type="button" class="lm-it" lang="ja" disabled><span>日本語</span><small lang="en">Coming soon</small></button>
+        </div>
+      </div>
     </nav>
   </header>
 
@@ -55,50 +70,53 @@
       <h1 id="h-convert" class="vh">Convert retail rent and area</h1>
 
       <form class="conv2" id="conv" autocomplete="off" novalidate>
-        <div class="picker" role="group" aria-label="Markets">
-          <div class="wcol">
-            <div class="wcap" id="wl-from">From</div>
-            <div class="wheelbox"><div class="wheel" id="wheel-from" role="listbox" tabindex="0" aria-labelledby="wl-from"></div></div>
+        <!-- From: the market and the space being quoted, together -->
+        <section class="fcard" aria-labelledby="h-from">
+          <div class="c-top">
+            <h2 class="c-lbl" id="h-from">From</h2>
+            <button type="button" class="mkt" id="mkt-from" aria-haspopup="dialog"><span class="mkt-name">Singapore</span><svg class="ic sm" aria-hidden="true"><use href="#i-down"/></svg></button>
           </div>
-          <button type="button" class="swap" id="swap" aria-label="Swap From and To markets">
-            <svg class="ic"><use href="#i-swaph"/></svg>
-          </button>
-          <div class="wcol">
-            <div class="wcap" id="wl-to">To</div>
-            <div class="wheelbox"><div class="wheel" id="wheel-to" role="listbox" tabindex="0" aria-labelledby="wl-to"></div></div>
+          <div class="frow">
+            <label for="area" class="fr-l"><svg class="ic fr-ic" aria-hidden="true"><use href="#i-area"/></svg><span>Area</span></label>
+            <div class="fr-in"><input id="area" type="text" inputmode="decimal" placeholder="e.g. 1,000" enterkeyhint="next"><span class="fr-u" id="area-u">sq ft</span></div>
           </div>
-        </div>
+          <div class="frow">
+            <label for="rent" class="fr-l"><svg class="ic fr-ic" aria-hidden="true"><use href="#i-coin"/></svg><span>Rent</span></label>
+            <div class="fr-in"><span class="pre" id="rent-cur" aria-hidden="true">S$</span><input id="rent" type="text" inputmode="decimal" placeholder="Optional" enterkeyhint="done">
+              <button type="button" class="fr-ubtn" id="basis-btn" aria-haspopup="true" aria-expanded="false" aria-controls="basis-menu"><span id="basis-btn-lbl">/ sq ft / mo</span><svg class="ic sm" aria-hidden="true"><use href="#i-down"/></svg></button>
+            </div>
+            <div class="basis-menu" id="basis-menu" role="group" aria-label="How the rent is quoted" hidden>
+              <button type="button" class="bm-it" data-b="unit"><span class="bm-t" id="bm-unit">Per sq ft</span><span class="bm-s">e.g. S$12 per sq ft a month</span></button>
+              <button type="button" class="bm-it" data-b="total"><span class="bm-t">Total for the whole space</span><span class="bm-s">e.g. US$5,000,000 a year</span></button>
+            </div>
+          </div>
+          <div class="quoted">
+            <span id="quoted-txt"></span>
+            <button type="button" class="link" id="quoted-btn" aria-expanded="false" aria-controls="from-adv">Change</button>
+          </div>
+          <div class="adv" id="from-adv" hidden>
+            <div class="adv-row"><span class="adv-k" id="adv-u">Unit</span><div class="seg" id="seg-from-unit" role="group" aria-labelledby="adv-u"></div></div>
+            <div class="adv-row"><span class="adv-k" id="adv-p">Rent per</span><div class="seg" id="seg-from-period" role="group" aria-labelledby="adv-p"></div></div>
+          </div>
+        </section>
 
-        <div class="inputs">
-          <div class="fld">
-            <label for="area"><span>Area</span><span class="u" id="area-u">sq ft</span></label>
-            <div class="box"><input id="area" type="text" inputmode="decimal" placeholder="e.g. 1,000" enterkeyhint="next"></div>
-          </div>
-          <div class="fld">
-            <label for="rent"><span>Rent</span><span class="u" id="rent-u">/ sq ft / mo</span></label>
-            <div class="box"><span class="pre" id="rent-cur" aria-hidden="true">S$</span><input id="rent" type="text" inputmode="decimal" placeholder="Optional" enterkeyhint="done"></div>
-          </div>
-        </div>
-        <div class="quoted">
-          <span id="quoted-txt"></span>
-          <button type="button" class="link" id="quoted-btn" aria-expanded="false" aria-controls="from-adv">Change</button>
-        </div>
-        <div class="adv" id="from-adv" hidden>
-          <label class="wide">Area unit<select id="area-unit"></select></label>
-          <label class="wide">Rent per<select id="rent-unit"></select></label>
-          <label>Rent currency<select id="rent-cur-sel"></select></label>
-          <label>Rent period<select id="rent-period"></select></label>
+        <div class="swaprow">
+          <button type="button" class="swap" id="swap" aria-label="Swap From and To markets"><svg class="ic"><use href="#i-swap"/></svg></button>
         </div>
 
         <section class="outcard res2" aria-labelledby="h-result">
-          <div class="rtop">
-            <h2 id="h-result" class="rlabel">Result</h2>
+          <h2 id="h-result" class="vh">Result</h2>
+          <div class="rtop c-top">
+            <div class="c-pair">
+              <span class="c-lbl" aria-hidden="true">To</span>
+              <button type="button" class="mkt" id="mkt-to" aria-haspopup="dialog"><span class="mkt-name">Japan</span><svg class="ic sm" aria-hidden="true"><use href="#i-down"/></svg></button>
+            </div>
             <button type="button" class="copybtn" id="copy" disabled><svg class="ic sm" aria-hidden="true"><use href="#i-copy"/></svg><span id="copy-lbl">Copy</span></button>
           </div>
           <div id="out" aria-live="polite"></div>
           <div class="showas" role="group" aria-label="Show the result in">
-            <div class="sa-row"><span class="sa-k" id="sa-p">Rent per</span><div class="seg" id="seg-period" role="group" aria-labelledby="sa-p"></div></div>
             <div class="sa-row"><span class="sa-k" id="sa-u">Area in</span><div class="seg" id="seg-unit" role="group" aria-labelledby="sa-u"></div></div>
+            <div class="sa-row"><span class="sa-k" id="sa-p">Rent per</span><div class="seg" id="seg-period" role="group" aria-labelledby="sa-p"></div></div>
             <div class="sa-row"><span class="sa-k" id="sa-c">Currency</span><div class="seg" id="seg-cur" role="group" aria-labelledby="sa-c"></div></div>
           </div>
           <p class="caution" id="caution" hidden></p>
@@ -138,6 +156,15 @@
     </section>
   </main>
 
+  <!-- Market picker: a bottom sheet listing every market -->
+  <div class="sheet-bg" id="mkt-sheet" hidden>
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-h">
+      <div class="grab" aria-hidden="true"></div>
+      <h2 id="sheet-h">Choose a market</h2>
+      <div class="mlist" id="mkt-list"></div>
+    </div>
+  </div>
+
   <footer class="site">
     <dl class="updates">
       <div><dt>Exchange rates</dt><dd>From open.er-api.com, which publishes new rates once a day. The app checks for new rates each time it opens, at most every 12 hours.</dd></div>
@@ -146,7 +173,7 @@
     <p>All figures are indicative. Verify before advising clients.</p>
   </footer>
 
-  <script src="data.js?v=10"></script>
-  <script src="app.js?v=10"></script>
+  <script src="data.js?v=11"></script>
+  <script src="app.js?v=11"></script>
 </body>
 </html>

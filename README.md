@@ -19,17 +19,20 @@ Lease Converter is a small, fast web app that turns a rent and an area into anot
 
 ## What it does
 
-**Convert.** Built for one-handed use on a phone:
+**Convert.** Built for one-handed use on a phone, with everything on one screen:
 
-- **Pick markets with two scroll wheels**, From on the left and To on the right, like the iPhone's language picker. The app remembers your last From market, so most of the time you only flick To. The swap button between them reverses the conversion and carries your figures across.
-- **Type the area and rent** side by side. Each market's usual unit, currency and period are filled in for you. If a quote uses different terms, tap **Change** to set them.
-- **Read the result** in the destination market's own terms:
+- **From card: your market and your numbers.** Tap the From market's name to pick from a list that shows how each market quotes rent. The app remembers your last From market, so most of the time you only change To. Under it, type the **Area** and the **Rent**.
+- **Rent per unit or for the whole space.** Tap the blue unit label in the Rent box (for example "/ sq ft / mo") to switch between a rent per sq ft (or m², tsubo…) and the **total rent for the whole space**, the way US and Australian listings often quote it (e.g. 10,000 sq ft at US$5,000,000 a year). A total needs the area to work out the rate.
+- Each market's usual unit and period are filled in for you, and the currency always follows the From market. If a quote uses a different unit or period, tap **Change**: one **Unit** setting covers both the area and the rent, and **Rent per** sets day, month or year.
+- **Swap** between the cards reverses the conversion and carries your figures across.
+- **To card: the destination and the answer.** Tap the To market's name to change it. The card shows, in that market's own terms:
+  - the area in its unit
   - the rent as that market would quote it
-  - the area in its unit, plus m², sq ft and ping/tsubo/pyeong
-  - the total rent, per day, month and year
+  - the total rent for the space
   - a short warning where the market has a known quirk, such as key money in Korea or gross-area shop listings in Hong Kong
-- **Change how the result is shown** with three toggles: rent per day, month or year; area in m², sq ft or ping/tsubo/pyeong; and the destination's currency, yours, or US$.
-- **Copy the result** to paste into WhatsApp, WeChat or an email. It copies a short summary of the area, rent and total rent with the exchange rate and its date, and the route and total lines appear in bold where the app supports it.
+- **Change how the result is shown** with three toggles, in the same order as the results: area in m², sq ft or ping/tsubo/pyeong; rent per day, month or year; and the destination's currency, yours, or US$.
+- **Copy the result** to paste into WhatsApp, WeChat or an email. It copies a short summary of the area, rent and total rent (and the total you typed, if you entered one) with the exchange rate and its date, and the route and total lines appear in bold where the app supports it.
+- **Language.** The globe at the end of the navigation bar opens an App language menu. Only English is available so far; Simplified Chinese, Traditional Chinese and Japanese are marked "Coming soon".
 
 **Market guides.** For each market: the area unit, quoting period, currency, area basis, what the headline rent includes, retail-specific notes, and the latest benchmark with its source.
 
@@ -94,7 +97,7 @@ sw.js                  Service worker for offline use
 manifest.webmanifest   Home-screen app settings
 ```
 
-- **Accessibility:** every input is labelled, results are announced to screen readers, keyboard focus is visible, tap targets are at least 44px, and the app respects Reduce Motion and Reduce Transparency.
+- **Accessibility:** every input is labelled, results are announced to screen readers, keyboard focus is visible, the market list works with the keyboard (arrows, Enter, Esc), and the app respects Reduce Motion and Reduce Transparency. Most tap targets are 38–44px tall; the result toggles are 30px tall but wide, to keep the whole result on one screen.
 - **Privacy:** there are no accounts, no tracking and no analytics. The only outside request is for exchange rates.
 
 ### Run it locally

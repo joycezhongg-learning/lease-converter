@@ -56,7 +56,6 @@
   const parse = (s) => { const n = parseFloat(String(s).replace(/[,\s_]/g, "")); return Number.isFinite(n) && n >= 0 ? n : null; };
 
   // ---------- convert: state ----------
-  const ROW = 44; // wheel row height; must match --row in app.css
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const PINGS = new Set(["ping", "tsubo", "pyeong"]);
   const TZ = { "Asia/Singapore": "sg", "Asia/Tokyo": "jp", "Asia/Hong_Kong": "hk", "Asia/Shanghai": "cn", "Asia/Taipei": "tw",
@@ -90,92 +89,127 @@
   const save = () => store.set(STATE_KEY, S);
 
   // ---------- convert: inputs ----------
-  const el = {
-    area: $("area"), rent: $("rent"), areaUnit: $("area-unit"), rentCurSel: $("rent-cur-sel"),
-    rentUnit: $("rent-unit"), rentPeriod: $("rent-period"),
-  };
-  const opt = (v, t) => { const o = document.createElement("option"); o.value = v; o.textContent = t; return o; };
-  // ping, tsubo and pyeong are the same 3.306 m² unit, so the dropdowns list them once.
-  const UNIT_OPTS = [["sqm", "m²"], ["sqft", "sq ft"], ["ping", "ping / tsubo / pyeong"]];
-  [el.areaUnit, el.rentUnit].forEach((s) => UNIT_OPTS.forEach(([k, t]) => s.append(opt(k, t))));
-  const toOpt = (u) => (PINGS.has(u) ? "ping" : u);
-  const fromOpt = (v) => (v === "ping" && PINGS.has(byId[S.from].unit) ? byId[S.from].unit : v);
-  Object.entries(PERIODS).forEach(([k, p]) => el.rentPeriod.append(opt(k, p.label)));
-  Object.keys(CURRENCIES).forEach((c) => el.rentCurSel.append(opt(c, `${c} · ${CURRENCIES[c]}`)));
-  el.area.value = S.area || ""; el.rent.value = S.rent || "";
+  // Rent currency always follows the From market; one unit covers both area and rent.
+  const lockFrom = () => { S.rentCur = byId[S.from].currency; S.rentUnit = S.areaUnit; S.basis = S.basis === "total" ? "total" : "unit"; S.total = S.total || ""; };
+  lockFrom();
+
+  const el = { area: $("area"), rent: $("rent") };
+  const roundIn = (x) => String(Math.round(x * 100) / 100);
+  el.area.value = S.area || "";
+  // One Rent box: it holds the rent per unit, or the total for the whole space (chosen from its unit label).
+  el.rent.value = (S.basis === "total" ? S.total : S.rent) || "";
   el.area.addEventListener("input", () => { S.area = el.area.value; render(); });
-  el.rent.addEventListener("input", () => { S.rent = el.rent.value; render(); });
+  el.rent.addEventListener("input", () => {
+    if (S.basis === "total") S.total = el.rent.value; else S.rent = el.rent.value;
+    render();
+  });
   el.area.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); el.rent.focus(); } });
   el.rent.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); el.rent.blur(); } });
-  el.areaUnit.addEventListener("change", () => { S.areaUnit = fromOpt(el.areaUnit.value); render(); });
-  el.rentCurSel.addEventListener("change", () => { S.rentCur = el.rentCurSel.value; render(); });
-  el.rentUnit.addEventListener("change", () => { S.rentUnit = fromOpt(el.rentUnit.value); render(); });
-  el.rentPeriod.addEventListener("change", () => { S.rentPeriod = el.rentPeriod.value; render(); });
+
+  // Switch between "per unit" and "total for the space", keeping the same rent where it can be worked out.
+  function setBasis(b) {
+    if (b === S.basis) return;
+    const c = compute();
+    if (b === "total" && c.totalLocal != null) S.total = roundIn(c.totalLocal);
+    if (b === "unit" && c.unitLocal != null) S.rent = roundIn(c.unitLocal);
+    S.basis = b;
+    el.rent.value = (b === "total" ? S.total : S.rent) || "";
+    render();
+  }
+  // The unit label in the Rent box is a menu: per unit, or total for the whole space
+  const basisBtn = $("basis-btn"), basisMenu = $("basis-menu");
+  function setBasisMenu(open) { basisMenu.hidden = !open; basisBtn.setAttribute("aria-expanded", String(open)); if (open) basisMenu.querySelector(`[data-b="${S.basis}"]`).focus(); }
+  basisBtn.addEventListener("click", () => setBasisMenu(basisMenu.hidden));
+  basisMenu.addEventListener("click", (e) => { const b = e.target.closest(".bm-it"); if (!b) return; setBasis(b.dataset.b); setBasisMenu(false); el.rent.focus(); });
+  document.addEventListener("click", (e) => { if (!basisMenu.hidden && !e.target.closest("#basis-menu, #basis-btn")) setBasisMenu(false); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !basisMenu.hidden) { setBasisMenu(false); basisBtn.focus(); } });
+
   $("quoted-btn").addEventListener("click", (e) => {
     const adv = $("from-adv"), open = adv.hidden;
     adv.hidden = !open; e.currentTarget.setAttribute("aria-expanded", String(open));
-    e.currentTarget.textContent = open ? "Hide" : "Change";
+    e.currentTarget.textContent = open ? "Done" : "Change";
   });
 
-  // ---------- convert: iOS-style wheels ----------
-  // Three rows visible. The middle row sits exactly inside the selection band
-  // because the list is padded by one row top and bottom and snaps per row.
-  function makeWheel(root, onPick) {
-    root.innerHTML = MARKETS.map((m, i) => `<div class="wi" role="option" id="${root.id}-${m.id}" data-i="${i}" aria-selected="false">${m.name}</div>`).join("");
-    const items = [...root.children];
-    let idx = 0, raf = 0, settleT = 0;
-    const clamp = (i) => Math.max(0, Math.min(items.length - 1, i));
-    function paint() {
-      raf = 0;
-      const st = root.scrollTop;
-      items.forEach((it, i) => {
-        const d = (i * ROW - st) / ROW, a = Math.min(Math.abs(d), 2.5);
-        it.style.transform = `rotateX(${(-d * 24).toFixed(2)}deg) scale(${(1 - 0.07 * a).toFixed(3)})`;
-        it.style.opacity = (1 - 0.42 * a).toFixed(3);
-      });
+  // ---------- convert: market pickers (button + bottom sheet) ----------
+  const sheet = $("mkt-sheet"), sheetList = $("mkt-list");
+  const shortQuote = (m) => m.quote.replace(/\s*\(.*\)\s*$/, "").split(". ")[0];
+  let sheetFor = null, sheetReturn = null;
+  function openSheet(which) {
+    sheetFor = which; sheetReturn = $(`mkt-${which}`);
+    const cur = S[which];
+    $("sheet-h").textContent = which === "from" ? "Convert from" : "Convert to";
+    sheetList.innerHTML = MARKETS.map((m) => `<button type="button" class="mopt" data-id="${m.id}" aria-current="${m.id === cur}">
+      <span class="mo-t"><span class="mo-n">${m.name}</span><span class="mo-s">${shortQuote(m)}</span></span>
+      ${m.id === cur ? '<span class="mo-chk" aria-hidden="true">✓</span>' : ""}</button>`).join("");
+    sheet.hidden = false;
+    document.documentElement.classList.add("sheet-open");
+    const sel = sheetList.querySelector('[aria-current="true"]');
+    sel.scrollIntoView({ block: "center" }); sel.focus({ preventScroll: true });
+  }
+  function closeSheet() {
+    if (sheet.hidden) return;
+    sheet.hidden = true; document.documentElement.classList.remove("sheet-open");
+    if (sheetReturn) sheetReturn.focus();
+  }
+  sheetList.addEventListener("click", (e) => {
+    const b = e.target.closest(".mopt"); if (!b) return;
+    const id = b.dataset.id;
+    if (sheetFor === "from") { S.from = id; fromDefaults(); wheelFrom.select(id); }
+    else { S.to = id; toDefaults(); wheelTo.select(id); }
+    render(); closeSheet();
+  });
+  sheet.addEventListener("click", (e) => { if (e.target === sheet) closeSheet(); });
+  document.addEventListener("keydown", (e) => {
+    if (sheet.hidden) return;
+    if (e.key === "Escape") { e.preventDefault(); closeSheet(); return; }
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") { // move between markets
+      const items = [...sheetList.querySelectorAll(".mopt")], i = items.indexOf(document.activeElement);
+      e.preventDefault(); items[Math.max(0, Math.min(items.length - 1, i + (e.key === "ArrowDown" ? 1 : -1)))].focus();
     }
-    function mark(i) {
-      idx = i;
-      items.forEach((it, j) => it.setAttribute("aria-selected", String(j === i)));
-      root.setAttribute("aria-activedescendant", items[i].id);
+    if (e.key === "Tab") { // keep focus inside the sheet
+      const items = [...sheetList.querySelectorAll(".mopt")], i = items.indexOf(document.activeElement);
+      e.preventDefault(); items[(i + (e.shiftKey ? -1 : 1) + items.length) % items.length].focus();
     }
-    function settle() {
-      const i = clamp(Math.round(root.scrollTop / ROW));
-      if (i !== idx) { mark(i); onPick(MARKETS[i].id); }
-    }
-    const go = (i) => root.scrollTo({ top: clamp(i) * ROW, behavior: reduceMotion ? "auto" : "smooth" });
-    root.addEventListener("scroll", () => {
-      if (!raf) raf = requestAnimationFrame(paint);
-      clearTimeout(settleT); settleT = setTimeout(settle, 160);
-    }, { passive: true });
-    if ("onscrollend" in window) root.addEventListener("scrollend", () => { clearTimeout(settleT); settle(); });
-    items.forEach((it, i) => it.addEventListener("click", () => go(i)));
-    root.addEventListener("keydown", (e) => {
-      const k = { ArrowUp: -1, ArrowDown: 1, PageUp: -3, PageDown: 3, Home: -99, End: 99 }[e.key];
-      if (k == null) return;
-      e.preventDefault(); go(idx + k);
-    });
+  });
+  function makePicker(which) {
+    const btn = $(`mkt-${which}`);
+    btn.addEventListener("click", () => openSheet(which));
     return {
-      select(id, smooth) { const i = MARKETS.findIndex((m) => m.id === id); mark(i); smooth ? go(i) : (root.scrollTop = i * ROW); paint(); },
-      sync() { root.scrollTop = idx * ROW; paint(); },
+      select(id) {
+        btn.querySelector(".mkt-name").textContent = byId[id].name;
+        btn.setAttribute("aria-label", `${which === "from" ? "From" : "To"} market: ${byId[id].name}. Change market`);
+      },
+      sync() {},
     };
   }
-  const wheelFrom = makeWheel($("wheel-from"), (id) => { S.from = id; fromDefaults(); render(); });
-  const wheelTo = makeWheel($("wheel-to"), (id) => { S.to = id; toDefaults(); render(); });
+  // (kept the old names so the swap and Markets-page code still work)
+  const wheelFrom = makePicker("from");
+  const wheelTo = makePicker("to");
   wheelFrom.select(S.from); wheelTo.select(S.to);
-  function syncWheels() { wheelFrom.sync(); wheelTo.sync(); }
+  function syncWheels() {}
 
   // ---------- convert: compute & render ----------
   function compute() {
     const from = byId[S.from], to = byId[S.to], r = FX.rates;
-    const area = parse(S.area), rent = parse(S.rent);
-    const out = { from, to };
+    const area = parse(S.area), out = { from, to };
+    const months = PERIODS[S.rentPeriod].months, cur = S.rentCur;
     if (area != null) out.sqm = area * UNITS[S.areaUnit].sqm;
-    if (rent != null) {
-      out.usdSqmMo = rent / UNITS[S.rentUnit].sqm / PERIODS[S.rentPeriod].months / r[S.rentCur];
-      out.destRate = out.usdSqmMo * r[S.showCur] * UNITS[S.showUnit].sqm * PERIODS[S.showPeriod].months;
+    if (S.basis === "total") {
+      const tot = parse(S.total);
+      if (tot != null && out.sqm) out.usdSqmMo = tot / out.sqm / months / r[cur];
+      else if (tot != null) out.needArea = true;
+    } else {
+      const rent = parse(S.rent);
+      if (rent != null) out.usdSqmMo = rent / UNITS[S.areaUnit].sqm / months / r[cur];
     }
-    if (out.sqm != null && out.usdSqmMo != null) out.totalUsdMo = out.usdSqmMo * out.sqm;
+    if (out.usdSqmMo != null) {
+      out.destRate = out.usdSqmMo * r[S.showCur] * UNITS[S.showUnit].sqm * PERIODS[S.showPeriod].months;
+      out.unitLocal = out.usdSqmMo * r[cur] * UNITS[S.areaUnit].sqm * months; // rent per unit, in the From market's terms
+    }
+    if (out.sqm != null && out.usdSqmMo != null) {
+      out.totalUsdMo = out.usdSqmMo * out.sqm;
+      out.totalLocal = out.totalUsdMo * months * r[cur]; // total for the space per entered period, From currency
+    }
     return out;
   }
 
@@ -185,7 +219,7 @@
 
   function seg(id, options, current, onPick) {
     const box = $(id);
-    box.innerHTML = options.map(([v, t]) => `<button type="button" data-v="${v}" aria-pressed="${v === current}">${t}</button>`).join("");
+    box.innerHTML = options.map(([v, t, label]) => `<button type="button" data-v="${v}" aria-pressed="${v === current}"${label ? ` aria-label="${label}" title="${label}"` : ""}>${t}</button>`).join("");
     box.onclick = (e) => { const b = e.target.closest("button"); if (b) onPick(b.dataset.v); };
   }
 
@@ -204,7 +238,8 @@
       lines.push(`Area: ${areaFmt(a)} ${unitLbl(S.areaUnit)} = ${areaFmt(conv)} ${unitLbl(U)}${extra}`);
     }
     if (c.destRate != null) {
-      lines.push(`Rent: ${money(parse(S.rent), S.rentCur)} per ${unitLbl(S.rentUnit)} per ${PERIODS[S.rentPeriod].label} = ${money(c.destRate, C)} per ${unitLbl(U)} per ${PERIODS[P].label}`);
+      const quotedTotal = S.basis === "total" ? ` (total ${money(parse(S.total), S.rentCur)} per ${PERIODS[S.rentPeriod].label})` : "";
+      lines.push(`Rent: ${money(c.unitLocal, S.rentCur)} per ${unitLbl(S.rentUnit)} per ${PERIODS[S.rentPeriod].label}${quotedTotal} = ${money(c.destRate, C)} per ${unitLbl(U)} per ${PERIODS[P].label}`);
     }
     if (c.totalUsdMo != null) {
       const tot = (cur) => c.totalUsdMo * PERIODS[P].months * FX.rates[cur];
@@ -252,40 +287,44 @@
     const U = S.showUnit, P = S.showPeriod, C = S.showCur;
 
     // inputs
-    $("area-u").textContent = unitLbl(S.areaUnit);
-    $("rent-u").textContent = `/ ${unitLbl(S.rentUnit)} / ${perLbl[S.rentPeriod]}`;
-    $("rent-cur").textContent = SYM[S.rentCur].trim();
-    el.areaUnit.value = toOpt(S.areaUnit); el.rentCurSel.value = S.rentCur; el.rentUnit.value = toOpt(S.rentUnit); el.rentPeriod.value = S.rentPeriod;
-    const fm = c.from;
-    const fromStd = S.areaUnit === fm.unit && S.rentUnit === fm.unit && S.rentPeriod === fm.period && S.rentCur === fm.currency;
-    $("quoted-txt").textContent = fromStd
-      ? `${fm.name} standard: ${SYM[S.rentCur].trim()} per ${unitLbl(S.rentUnit)} per ${PERIODS[S.rentPeriod].label}.`
-      : `Entered as ${SYM[S.rentCur].trim()} per ${unitLbl(S.rentUnit)} per ${PERIODS[S.rentPeriod].label}, area in ${unitLbl(S.areaUnit)}.`;
+    lockFrom();
+    const fm = c.from, sym = SYM[S.rentCur].trim(), uL = unitLbl(S.areaUnit), pL = perLbl[S.rentPeriod];
+    const totalMode = S.basis === "total";
+    $("area-u").textContent = uL;
+    $("rent-cur").textContent = sym;
+    const unitSuffix = `/ ${uL} / ${pL}`, totalSuffix = `total/${pL}`;
+    document.documentElement.dataset.basis = S.basis; // lets CSS give long totals a little more room
+    $("basis-btn-lbl").textContent = totalMode ? totalSuffix : unitSuffix;
+    $("bm-unit").textContent = `Per ${uL}`;
+    basisMenu.querySelectorAll(".bm-it").forEach((b) => b.setAttribute("aria-current", String(b.dataset.b === S.basis)));
+    el.rent.setAttribute("aria-label", totalMode ? `Total rent for the space, ${sym} per ${PERIODS[S.rentPeriod].label}` : `Rent, ${sym} per ${uL} per ${PERIODS[S.rentPeriod].label}`);
+    // Change panel: one unit for area and rent, and the period
+    const fUnits = ["sqm", "sqft"]; if (PINGS.has(fm.unit)) fUnits.push(fm.unit);
+    seg("seg-from-unit", fUnits.map((u) => [u, unitLbl(u)]), S.areaUnit, (v) => { S.areaUnit = S.rentUnit = v; render(); });
+    seg("seg-from-period", ["day", "month", "year"].map((p) => [p, p[0].toUpperCase() + p.slice(1)]), S.rentPeriod, (v) => { S.rentPeriod = v; render(); });
+    const fromStd = S.areaUnit === fm.unit && S.rentPeriod === fm.period && !totalMode;
+    $("quoted-txt").textContent = totalMode
+      ? `Entered as the total ${sym} rent per ${PERIODS[S.rentPeriod].label} for the whole space.`
+      : fromStd ? `${fm.name} standard: ${sym} per ${uL} per ${PERIODS[S.rentPeriod].label}.`
+      : `Entered as ${sym} per ${uL} per ${PERIODS[S.rentPeriod].label}.`;
 
     // result
     const rows = [];
-    if (c.destRate != null) {
-      const plain = C === "USD" && U === "sqm" && P === "month";
-      rows.push(`<div class="row">${ico("i-coin")}<div><div class="k">Rent</div>
-        <div class="v">${money(c.destRate, C)} <small>per ${unitLbl(U)} per ${PERIODS[P].label}</small></div>
-        ${plain ? "" : `<div class="s">≈ US$${num(c.usdSqmMo, 2)} per m² per month</div>`}</div></div>`);
-    }
     if (c.sqm != null) {
-      const others = ["sqm", "sqft", "ping"].filter((u) => UNITS[u].sqm !== UNITS[U].sqm)
-        .map((u) => `${areaFmt(c.sqm / UNITS[u].sqm)} ${u === "ping" ? "ping / tsubo / pyeong" : UNITS[u].label}`);
       rows.push(`<div class="row">${ico("i-area")}<div><div class="k">Area</div>
-        <div class="v">${areaFmt(c.sqm / UNITS[U].sqm)} <small>${unitLbl(U)}</small></div>
-        <div class="s">${others.join(" · ")}</div></div></div>`);
+        <div class="v">${areaFmt(c.sqm / UNITS[U].sqm)} <small>${unitLbl(U)}</small></div></div></div>`);
+    }
+    if (c.destRate != null) {
+      rows.push(`<div class="row">${ico("i-coin")}<div><div class="k">Rent</div>
+        <div class="v">${money(c.destRate, C)} <small>/ ${unitLbl(U)} / ${perLbl[P]}</small></div></div></div>`);
     }
     if (c.totalUsdMo != null) {
-      const tot = (p, cur) => c.totalUsdMo * PERIODS[p].months * FX.rates[cur];
-      const otherP = ["day", "month", "year"].filter((p) => p !== P).map((p) => `${money(tot(p, C), C)} per ${PERIODS[p].label}`);
-      if (S.rentCur !== C) otherP.push(`${money(tot(P, S.rentCur), S.rentCur)} per ${PERIODS[P].label}`);
+      const tot = c.totalUsdMo * PERIODS[P].months * FX.rates[C];
       rows.push(`<div class="row">${ico("i-cal")}<div><div class="k">Total rent</div>
-        <div class="v">${money(tot(P, C), C)} <small>per ${PERIODS[P].label}</small></div>
-        <div class="s">${otherP.join(" · ")}</div></div></div>`);
+        <div class="v">${money(tot, C)} <small>/ ${perLbl[P]}</small></div></div></div>`);
     }
     $("out").innerHTML = rows.length ? rows.join("")
+      : c.needArea ? `<p class="empty">Enter the area too: a total rent needs it to work out the rent per ${unitLbl(U)}.</p>`
       : `<p class="empty">Enter an area, a rent, or both to see how ${to.name} would quote it.</p>`;
 
     // "show as" controls
@@ -314,15 +353,20 @@
 
   // Swap: the result becomes the new input, so nothing is lost.
   $("swap").addEventListener("click", () => {
+    $("swap").classList.toggle("spun"); // arrows turn half a circle each tap: motion, not a colour state
     const c = compute();
-    const p = { ...S };
+    const p = { ...S }, r = FX.rates, newCur = byId[p.to].currency;
     Object.assign(S, {
       from: p.to, to: p.from,
-      areaUnit: p.showUnit, rentUnit: p.showUnit, rentPeriod: p.showPeriod, rentCur: p.showCur,
-      showUnit: p.rentUnit, showPeriod: p.rentPeriod, showCur: p.rentCur,
+      areaUnit: p.showUnit, rentUnit: p.showUnit, rentPeriod: p.showPeriod, rentCur: newCur,
+      showUnit: p.areaUnit, showPeriod: p.rentPeriod, showCur: p.rentCur,
     });
     if (c.sqm != null) S.area = el.area.value = String(+(c.sqm / UNITS[S.areaUnit].sqm).toPrecision(7));
-    if (c.destRate != null) S.rent = el.rent.value = String(+c.destRate.toPrecision(7));
+    if (c.usdSqmMo != null) {
+      S.rent = roundIn(c.usdSqmMo * r[newCur] * UNITS[S.areaUnit].sqm * PERIODS[S.rentPeriod].months);
+      if (c.totalUsdMo != null) S.total = roundIn(c.totalUsdMo * PERIODS[S.rentPeriod].months * r[newCur]);
+    }
+    el.rent.value = (S.basis === "total" ? S.total : S.rent) || "";
     wheelFrom.select(S.from, true); wheelTo.select(S.to, true);
     render();
   });
@@ -429,15 +473,31 @@
   window.addEventListener("popstate", route);
 
   // Nav glass turns sheerer once the page scrolls
-  const pill = document.querySelector(".pill");
-  const darkCard = document.querySelector(".outcard");
+  const pills = document.querySelectorAll(".top .pill"); // nav + language button
+  const darkCard = null; // app-cards: the result card is light now, so the nav never needs its on-dark colours
   function onScroll() {
-    pill.classList.toggle("sheer", window.scrollY > 8);
-    // Flip nav text to light while the dark output panel passes underneath
-    const p = pill.getBoundingClientRect(), mid = (p.top + p.bottom) / 2;
-    const d = darkCard.offsetParent ? darkCard.getBoundingClientRect() : null;
-    pill.classList.toggle("on-dark", !!d && d.top < mid && d.bottom > mid);
+    const p = pills[0].getBoundingClientRect(), mid = (p.top + p.bottom) / 2;
+    const d = darkCard && darkCard.offsetParent ? darkCard.getBoundingClientRect() : null;
+    pills.forEach((el) => {
+      el.classList.toggle("sheer", window.scrollY > 8);
+      // Flip nav text to light while the dark output panel passes underneath
+      el.classList.toggle("on-dark", !!d && d.top < mid && d.bottom > mid);
+    });
   }
+
+  // App language menu. Only English exists for now; the other languages are disabled placeholders.
+  const langBtn = $("lang-btn"), langMenu = $("lang-menu");
+  function setLangMenu(open, refocus) {
+    langMenu.hidden = !open;
+    langBtn.setAttribute("aria-expanded", String(open));
+    if (open) langMenu.querySelector('[aria-current="true"]').focus();
+    else if (refocus) langBtn.focus();
+  }
+  langBtn.addEventListener("click", () => setLangMenu(langMenu.hidden));
+  langMenu.addEventListener("click", (e) => { const b = e.target.closest(".lm-it"); if (b && !b.disabled) setLangMenu(false, true); });
+  document.addEventListener("click", (e) => { if (!langMenu.hidden && !e.target.closest(".langwrap")) setLangMenu(false); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !langMenu.hidden) setLangMenu(false, true); });
+  window.addEventListener("hashchange", () => setLangMenu(false));
   window.addEventListener("scroll", onScroll, { passive: true });
   onScroll();
 

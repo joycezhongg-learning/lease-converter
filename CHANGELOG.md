@@ -2,6 +2,19 @@
 
 Releases are numbered by the app's cache version (`VERSION` in `sw.js`). Weekly benchmark updates change only the figures in `data.js` and aren't listed here.
 
+## v10, 23 Nov 2026: one-screen Convert, total rent and a language button
+
+The Convert screen is rebuilt so a broker sees the whole answer without scrolling. On a 375px phone the toggles now end at about 617px, inside the first screen.
+
+- **Two cards instead of wheels.** The **From card** holds the From market with the Area and Rent you type, so the inputs sit under the market they describe. The **To card** holds the To market with the result. The swap button sits between them, and pressing it no longer changes its colour.
+- **Market list instead of scroll wheels.** Tap a market's name to open a list of all 15 markets, each showing how it quotes rent (e.g. "¥ per tsubo per month").
+- **Total rent for the whole space.** Tap the unit label in the Rent box to enter either a rent per unit or the total for the space, as US and Australian listings often quote it. Switching keeps the same rent where the area allows.
+- **Simpler Change panel.** One **Unit** setting now covers both area and rent, and the rent currency always follows the From market. The rent-currency menu is gone; **Rent per** stays.
+- **Results and toggles in one order:** Area, Rent, Total rent; then Area in, Rent per, Currency. Each result shows its icon, label, number and unit on one line.
+- **New look**, closer to Notion: a warm off-white page, white cards with hairline rows, the phone's system font, small grey input boxes and outline icons. The selected tab is grey instead of black, and the result card is no longer black.
+- **Language button.** A globe at the end of the navigation bar opens an App language menu: English, with Simplified Chinese, Traditional Chinese and Japanese marked "Coming soon".
+- The small grey lines under each result (US$ per m², other units, other periods) are gone, since the toggles show the same thing.
+
 ## v9, 20 Nov 2026: copy the result
 
 - **Copy button** on the result card, replacing the "Market standard" tag. It copies a short summary to paste into a chat or an email: the route, area, rent, total rent, the exchange rate with its date in brackets, the market's warning, and a one-line disclaimer. It copies what's on screen, so it follows the Per, Area in and Currency toggles. The route and total-rent lines are bold in WhatsApp and Telegram (`*bold*`), and in email, Notes and Slack (formatted text). WeChat and SMS show the asterisks as typed.
