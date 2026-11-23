@@ -2,6 +2,18 @@
 
 Releases are numbered by the app's cache version (`VERSION` in `sw.js`). Weekly benchmark updates change only the figures in `data.js` and aren't listed here.
 
+## v11, 23 Nov 2026: About page, smoother tabs and swipe
+
+Switching between tabs now moves instead of cutting from one screen to the next, and the app has an About page.
+
+- **About page.** Tap the new ruler logo at the start of the navigation bar (or "About & feedback" in the footer) for a short page about the app, with an **Email feedback** button.
+- **New logo.** A ruler replaces the old mark in the navigation bar, the browser tab and the home-screen icon. While About is open it tilts up, then springs back level when you leave.
+- **Moving tab highlight.** The grey highlight is now one bubble that springs from tab to tab, stretching between them as it goes. Press a tab and slide your finger along the bar and the bubble follows; let go to open that tab.
+- **Swipe between tabs.** Swipe the page left or right to move to the next or previous tab (About, Convert, Markets, Trends). The page follows your finger and the highlight leans toward the next tab. Short swipes spring back. Swipes that start at the very edge of the screen are left to the phone, so the usual back gesture still works.
+- **Pages slide in** from the side of the tab you moved toward.
+- **Thousand separators** in the Area and Rent boxes as you type (12,500 rather than 12500).
+- **Language button.** The globe tilts further when the App language menu opens and has a light yellow background, marking it as a setting rather than a page.
+
 ## v10, 23 Nov 2026: one-screen Convert, total rent and a language button
 
 The Convert screen is rebuilt so a broker sees the whole answer without scrolling. On a 375px phone the toggles now end at about 617px, inside the first screen.

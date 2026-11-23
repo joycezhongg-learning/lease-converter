@@ -14,7 +14,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Lease">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <link rel="stylesheet" href="app.css?v=11">
+  <link rel="stylesheet" href="app.css?v=33">
 </head>
 <body>
   <a class="skip" href="#main">Skip to content</a>
@@ -22,7 +22,7 @@
   <!-- Thin-line icon set -->
   <svg width="0" height="0" style="position:absolute" aria-hidden="true">
     <defs>
-      <symbol id="i-mark" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/><path d="M13.5 7h7M17 3.5v7M3.5 17h7"/></symbol>
+      <symbol id="i-mark" viewBox="0 0 16 16"><g stroke-width="0.833"><path d="M2 4.5 L2.45 4.5 A0.75 0.75 0 0 0 3.95 4.5 L4.85 4.5 A0.75 0.75 0 0 0 6.35 4.5 L7.25 4.5 A0.75 0.75 0 0 0 8.75 4.5 L9.65 4.5 A0.75 0.75 0 0 0 11.15 4.5 L12.05 4.5 A0.75 0.75 0 0 0 13.55 4.5 L14 4.5 L14 11.5 L2 11.5 Z"/><path d="M4.5 7.5v2.25M6.75 8.5v1.25M9 7.5v2.25M11.25 8.5v1.25"/></g></symbol>
       <symbol id="i-area" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="1.5"/><path d="M4 9h3M4 14h3M9 4v3M14 4v3"/></symbol>
       <symbol id="i-coin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M14.5 9.2c-.5-.8-1.4-1.2-2.5-1.2-1.4 0-2.5.8-2.5 2s1.1 1.6 2.5 2 2.5.8 2.5 2-1.1 2-2.5 2c-1.1 0-2-.4-2.5-1.2M12 6.5V8M12 16v1.5"/></symbol>
       <symbol id="i-cal" viewBox="0 0 24 24"><rect x="4" y="5.5" width="16" height="14.5" rx="1.5"/><path d="M4 10h16M8.5 3.5v4M15.5 3.5v4"/></symbol>
@@ -37,13 +37,15 @@
       <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8.5" y="8.5" width="11" height="11" rx="2"/><path d="M15.5 8.5V6a1.5 1.5 0 0 0-1.5-1.5H6A1.5 1.5 0 0 0 4.5 6v8A1.5 1.5 0 0 0 6 15.5h2.5"/></symbol>
       <symbol id="i-chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
       <symbol id="i-down" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+      <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3.5" y="5.5" width="17" height="13" rx="2"/><path d="M4 7l8 6 8-6"/></symbol>
       <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.3 2.4 3.5 5.2 3.5 8.5s-1.2 6.1-3.5 8.5c-2.3-2.4-3.5-5.2-3.5-8.5s1.2-6.1 3.5-8.5z"/></symbol>
     </defs>
   </svg>
 
   <header class="top">
     <nav class="pill" aria-label="Main">
-      <span class="brand" aria-hidden="true"><svg class="ic"><use href="#i-mark"/></svg></span>
+      <span class="bubble" aria-hidden="true"></span>
+      <a class="brand" href="#/about" data-nav="about" aria-label="About this app"><svg class="ic" aria-hidden="true"><use href="#i-mark"/></svg></a>
       <a href="#/" data-nav="convert">Convert</a>
       <a href="#/markets" data-nav="markets">Markets</a>
       <a href="#/trends" data-nav="trends">Trends</a>
@@ -94,10 +96,12 @@
             <span id="quoted-txt"></span>
             <button type="button" class="link" id="quoted-btn" aria-expanded="false" aria-controls="from-adv">Change</button>
           </div>
-          <div class="adv" id="from-adv" hidden>
+          <div class="adv-wrap" id="from-adv-wrap"><div class="adv-in">
+          <div class="adv" id="from-adv">
             <div class="adv-row"><span class="adv-k" id="adv-u">Unit</span><div class="seg" id="seg-from-unit" role="group" aria-labelledby="adv-u"></div></div>
             <div class="adv-row"><span class="adv-k" id="adv-p">Rent per</span><div class="seg" id="seg-from-period" role="group" aria-labelledby="adv-p"></div></div>
           </div>
+          </div></div>
         </section>
 
         <div class="swaprow">
@@ -111,7 +115,7 @@
               <span class="c-lbl" aria-hidden="true">To</span>
               <button type="button" class="mkt" id="mkt-to" aria-haspopup="dialog"><span class="mkt-name">Japan</span><svg class="ic sm" aria-hidden="true"><use href="#i-down"/></svg></button>
             </div>
-            <button type="button" class="copybtn" id="copy" disabled><svg class="ic sm" aria-hidden="true"><use href="#i-copy"/></svg><span id="copy-lbl">Copy</span></button>
+            <button type="button" class="copybtn" id="copy" disabled><span class="cb-ic" aria-hidden="true"><svg class="ic sm cb-copy"><use href="#i-copy"/></svg><svg class="ic sm cb-check" viewBox="0 0 24 24"><path pathLength="1" d="M5.5 12.5l4.2 4.2L18.5 7.8"/></svg></span><span id="copy-lbl">Copy Result</span></button>
           </div>
           <div id="out" aria-live="polite"></div>
           <div class="showas" role="group" aria-label="Show the result in">
@@ -154,6 +158,27 @@
       </div>
       <p class="foot" id="fxnote2"></p>
     </section>
+    <!-- ABOUT: a short Notion-style page, opened from the logo in the nav -->
+    <section id="view-about" class="view about" aria-labelledby="h-about" hidden>
+      <div class="ab-block ab-intro">
+        <span class="ab-emoji" aria-hidden="true">👋</span>
+        <div>
+          <h1 id="h-about">About</h1>
+          <p class="ab-lede"><b>Convert.</b><br>Built for brokers on the go: one hand, one screen, a few taps.</p>
+        </div>
+      </div>
+
+      <aside class="ab-block ab-callout" aria-labelledby="h-fb">
+        <span class="ab-emoji" aria-hidden="true">💬</span>
+        <div>
+          <h2 id="h-fb">Feedback welcome</h2>
+          <p>A wrong number, a missing market, something confusing? Send me a note.</p>
+          <a class="ab-mail" id="fb-mail" href="mailto:feedback@example.com?subject=Lease%20Converter%20feedback"><svg class="ic sm" aria-hidden="true"><use href="#i-mail"/></svg>Email feedback</a>
+        </div>
+      </aside>
+
+      <p class="ab-block ab-by"><span class="ab-emoji"><img src="avatar.png?v=24" width="25" height="44" alt=""></span><span>Made by Yiwei <span class="ab-ver">· Updated 23 Nov 2026</span></span></p>
+    </section>
   </main>
 
   <!-- Market picker: a bottom sheet listing every market -->
@@ -166,14 +191,19 @@
   </div>
 
   <footer class="site">
+    <!-- About page only: the notes fold into one row until opened -->
+    <button type="button" class="ft-sum" id="ft-sum" aria-expanded="false" aria-controls="ft-notes">Exchange rates · Rent benchmarks · Disclaimer<span class="ft-more" id="ft-more">Details</span></button>
+    <div id="ft-notes">
     <dl class="updates">
       <div><dt>Exchange rates</dt><dd>From open.er-api.com, which publishes new rates once a day. The app checks for new rates each time it opens, at most every 12 hours.</dd></div>
       <div><dt>Rent benchmarks</dt><dd>From CBRE, JLL, Cushman &amp; Wakefield and others, who publish quarterly. Checked for new releases every week. Last checked <span id="checked"></span>.</dd></div>
     </dl>
-    <p>All figures are indicative. Verify before advising clients.</p>
+    <p>All figures are indicative. Verify before advising clients. <a href="#/about" class="ft-about">About &amp; feedback</a></p>
+    </div>
   </footer>
 
-  <script src="data.js?v=11"></script>
-  <script src="app.js?v=11"></script>
+  <script src="data.js?v=22"></script>
+  <script src="app.js?v=29"></script>
+
 </body>
 </html>

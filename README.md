@@ -21,7 +21,7 @@ Lease Converter is a small, fast web app that turns a rent and an area into anot
 
 **Convert.** Built for one-handed use on a phone, with everything on one screen:
 
-- **From card: your market and your numbers.** Tap the From market's name to pick from a list that shows how each market quotes rent. The app remembers your last From market, so most of the time you only change To. Under it, type the **Area** and the **Rent**.
+- **From card: your market and your numbers.** Tap the From market's name to pick from a list that shows how each market quotes rent. The app remembers your last From market, so most of the time you only change To. Under it, type the **Area** and the **Rent**; both add thousand separators as you type.
 - **Rent per unit or for the whole space.** Tap the blue unit label in the Rent box (for example "/ sq ft / mo") to switch between a rent per sq ft (or m², tsubo…) and the **total rent for the whole space**, the way US and Australian listings often quote it (e.g. 10,000 sq ft at US$5,000,000 a year). A total needs the area to work out the rate.
 - Each market's usual unit and period are filled in for you, and the currency always follows the From market. If a quote uses a different unit or period, tap **Change**: one **Unit** setting covers both the area and the rent, and **Rent per** sets day, month or year.
 - **Swap** between the cards reverses the conversion and carries your figures across.
@@ -34,9 +34,13 @@ Lease Converter is a small, fast web app that turns a rent and an area into anot
 - **Copy the result** to paste into WhatsApp, WeChat or an email. It copies a short summary of the area, rent and total rent (and the total you typed, if you entered one) with the exchange rate and its date, and the route and total lines appear in bold where the app supports it.
 - **Language.** The globe at the end of the navigation bar opens an App language menu. Only English is available so far; Simplified Chinese, Traditional Chinese and Japanese are marked "Coming soon".
 
+**Moving between pages.** Tap a tab in the navigation bar, slide your finger along the bar to drag the highlight to another tab, or swipe the page left or right.
+
 **Market guides.** For each market: the area unit, quoting period, currency, area basis, what the headline rent includes, retail-specific notes, and the latest benchmark with its source.
 
 **Trends.** The latest headline retail rent for every market, in local terms and normalised to US$ per m² per month, sorted highest first.
+
+**About.** Tap the ruler logo at the start of the navigation bar (or "About & feedback" in the footer) for a short page about the app and a way to send feedback.
 
 ## Markets covered
 
@@ -88,7 +92,7 @@ Each benchmark in the app links to its original source and shows when it was las
 Plain HTML, CSS and JavaScript, with no framework, build step or dependencies.
 
 ```
-index.html             Page structure and the three views (Convert, Markets, Trends)
+index.html             Page structure and the views (Convert, Markets, Trends, About)
 CHANGELOG.md           What changed in each release
 app.css                Styles, light and dark themes, responsive layout
 app.js                 Conversion logic, routing, exchange-rate loading
@@ -97,7 +101,7 @@ sw.js                  Service worker for offline use
 manifest.webmanifest   Home-screen app settings
 ```
 
-- **Accessibility:** every input is labelled, results are announced to screen readers, keyboard focus is visible, the market list works with the keyboard (arrows, Enter, Esc), and the app respects Reduce Motion and Reduce Transparency. Most tap targets are 38–44px tall; the result toggles are 30px tall but wide, to keep the whole result on one screen.
+- **Accessibility:** every input is labelled, results are announced to screen readers, keyboard focus is visible, the market list works with the keyboard (arrows, Enter, Esc), and the app respects Reduce Motion (no springs, tilts or slides) and Reduce Transparency. Swiping and dragging are shortcuts; every page is also one tap away in the navigation bar. Most tap targets are 38–44px tall; the result toggles are 30px tall but wide, to keep the whole result on one screen.
 - **Privacy:** there are no accounts, no tracking and no analytics. The only outside request is for exchange rates.
 
 ### Run it locally
