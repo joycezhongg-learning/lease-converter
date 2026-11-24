@@ -847,6 +847,10 @@ html[data-view="about"] footer.site { padding-top: 16px; }
 .pill .brand[aria-current="page"]:hover { background: transparent; }
 /* Horizontal drags belong to the bubble; vertical ones still scroll the page */
 .pill, .pill a { touch-action: pan-y; -webkit-user-drag: none; }
+/* Page swipe (app.js): tell the browser up-front that sideways drags on the page are ours, so iOS never
+   starts a scroll that then fights the swipe. Pinch zoom still works; sideways scrollers keep their own. */
+main { touch-action: pan-y pinch-zoom; }
+.tablewrap { touch-action: pan-x pan-y pinch-zoom; }
 .pill.dragging { -webkit-user-select: none; user-select: none; }
 .pill.dragging a { opacity: 1; }
 .pill a.hot { color: var(--ink); }

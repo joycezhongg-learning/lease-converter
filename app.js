@@ -691,11 +691,11 @@
   (() => {
     const main = $("main"), root = document.documentElement;
     const EDGE = 24, LOCK = 10, COMMIT = 0.25, FLICK = 0.45; // px, px, share of width, px per ms
-    let t = null;
+    let t = null, busy = false;
     const scrollsX = (n) => { for (; n && n !== main; n = n.parentElement) { const o = getComputedStyle(n).overflowX; if ((o === "auto" || o === "scroll") && n.scrollWidth > n.clientWidth + 1) return true; } return false; };
     main.addEventListener("touchstart", (e) => {
       t = null;
-      if (e.touches.length !== 1 || !langMenu.hidden) return;
+      if (busy || e.touches.length !== 1 || !langMenu.hidden) return;
       const p = e.touches[0], tg = e.target;
       if (p.clientX < EDGE || p.clientX > innerWidth - EDGE) return;
       if (tg.closest("input, textarea, select, [contenteditable]") || scrollsX(tg)) return;
@@ -711,7 +711,7 @@
         if (Math.abs(dx) < LOCK && Math.abs(dy) < LOCK) return;
         t.lock = Math.abs(dx) > Math.abs(dy) * 1.4 ? "x" : "y";
         if (t.lock === "y") { t = null; return; }
-        t.view.classList.remove("enter"); t.view.style.transition = "none";
+        t.view.classList.remove("enter"); t.view.style.transition = "none"; t.view.style.willChange = "transform, opacity";
       }
       e.preventDefault(); // keep the page from scrolling while swiping sideways
       const dt = e.timeStamp - t.lastT; if (dt > 0) t.v = 0.8 * ((p.clientX - t.lastX) / dt) + 0.2 * t.v;
@@ -727,16 +727,25 @@
       if (!t || t.lock !== "x") { t = null; return; }
       const { view, x, x0, v } = t, dx = x - x0, to = dx < 0 ? t.next : t.prev; t = null;
       const go_ = commit && to && (Math.abs(dx) > innerWidth * COMMIT || (Math.abs(v) > FLICK && Math.abs(dx) > 30 && Math.sign(v) === Math.sign(dx)));
+      const clear = () => { view.style.transition = view.style.transform = view.style.opacity = view.style.willChange = ""; };
       if (go_) {
-        view.style.transition = view.style.transform = view.style.opacity = "";
-        root.style.setProperty("--enter-dist", "56px"); // the new page comes in from further away, continuing the swipe
-        go(to.getAttribute("href"));
-        setTimeout(() => root.style.removeProperty("--enter-dist"), 400);
+        // Carry the old page on out in the direction of the swipe (no snap back, no blank frame),
+        // then hand over to the new page, which slides in from the other side.
+        busy = true;
+        const out = Math.sign(dx) * innerWidth * 0.35;
+        view.style.transition = "transform .14s cubic-bezier(.3, 0, .8, .6), opacity .14s linear";
+        view.style.transform = `translate3d(${out}px,0,0)`; view.style.opacity = "0";
+        setTimeout(() => {
+          root.style.setProperty("--enter-dist", "40px");
+          go(to.getAttribute("href"));
+          clear(); busy = false;
+          setTimeout(() => root.style.removeProperty("--enter-dist"), 400);
+        }, 140);
         return;
       }
       view.style.transition = "transform .35s cubic-bezier(.34, 1.3, .64, 1), opacity .25s ease";
       view.style.transform = ""; view.style.opacity = "";
-      view.addEventListener("transitionend", () => { view.style.transition = ""; }, { once: true });
+      view.addEventListener("transitionend", clear, { once: true });
       bubble.settle();
     };
     main.addEventListener("touchend", () => finish(true));

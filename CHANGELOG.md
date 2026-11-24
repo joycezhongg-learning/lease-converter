@@ -2,6 +2,11 @@
 
 Releases are numbered by the app's cache version (`VERSION` in `sw.js`). Weekly benchmark updates change only the figures in `data.js` and aren't listed here.
 
+## v11.1, 24 Nov 2026: smoother swipes on iPhone
+
+- **No more jitter while swiping.** A slightly diagonal swipe could make the page scroll up and down at the same time as it slid sideways. The page now tells the phone up front that sideways drags switch tabs, so the two no longer fight. Scrolling up and down and pinch-to-zoom work as before.
+- **No jump when you let go.** The page you're leaving now carries on out in the direction of your swipe before the next one slides in, instead of disappearing from under your finger.
+
 ## v11, 23 Nov 2026: About page, smoother tabs and swipe
 
 Switching between tabs now moves instead of cutting from one screen to the next, and the app has an About page.
