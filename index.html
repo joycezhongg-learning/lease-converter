@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Lease Converter</title>
+  <title>Lease Convert</title>
   <meta name="description" content="Convert retail rents and areas across Asia-Pacific, US and UK markets: m², sq ft, ping, tsubo, pyeong, per day, month or year, in local currency.">
   <meta name="theme-color" content="#f7f7f5" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#191919" media="(prefers-color-scheme: dark)">
@@ -14,7 +14,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Lease">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <link rel="stylesheet" href="app.css?v=34">
+  <link rel="stylesheet" href="app.css?v=35">
 </head>
 <body>
   <a class="skip" href="#main">Skip to content</a>
@@ -42,24 +42,24 @@
     </defs>
   </svg>
 
-  <header class="top">
-    <nav class="pill" aria-label="Main">
-      <span class="bubble" aria-hidden="true"></span>
-      <a class="brand" href="#/about" data-nav="about" aria-label="About this app"><svg class="ic" aria-hidden="true"><use href="#i-mark"/></svg></a>
-      <a href="#/" data-nav="convert">Convert</a>
-      <a href="#/markets" data-nav="markets">Markets</a>
-      <a href="#/trends" data-nav="trends">Trends</a>
+  <header class="app-header">
+    <nav class="nav-pill" aria-label="Main">
+      <span class="nav-bubble" aria-hidden="true"></span>
+      <a class="nav-tab nav-logo" href="#/about" data-nav="about" aria-label="About this app"><svg class="ic" aria-hidden="true"><use href="#i-mark"/></svg></a>
+      <a class="nav-tab" href="#/" data-nav="convert">Convert</a>
+      <a class="nav-tab" href="#/markets" data-nav="markets">Markets</a>
+      <a class="nav-tab" href="#/trends" data-nav="trends">Trends</a>
       <!-- App language. Only English exists so far; the others are placeholders. -->
       <div class="langwrap">
-        <button type="button" class="gbtn" id="lang-btn" aria-expanded="false" aria-controls="lang-menu" aria-label="App language: English">
+        <button type="button" class="nav-globe" id="lang-btn" aria-expanded="false" aria-controls="lang-menu" aria-label="App language: English">
           <svg class="ic"><use href="#i-globe"/></svg>
         </button>
-        <div class="langmenu" id="lang-menu" role="group" aria-labelledby="lang-h" hidden>
-          <div class="lm-h" id="lang-h">App language</div>
-          <button type="button" class="lm-it" lang="en" aria-current="true"><span>English</span><span class="lm-chk" aria-hidden="true">✓</span></button>
-          <button type="button" class="lm-it" lang="zh-Hans" disabled><span>简体中文</span><small lang="en">Coming soon</small></button>
-          <button type="button" class="lm-it" lang="zh-Hant" disabled><span>繁體中文</span><small lang="en">Coming soon</small></button>
-          <button type="button" class="lm-it" lang="ja" disabled><span>日本語</span><small lang="en">Coming soon</small></button>
+        <div class="menu" id="lang-menu" role="group" aria-labelledby="lang-h" hidden>
+          <div class="menu-h" id="lang-h">App language</div>
+          <button type="button" class="menu-item" lang="en" aria-current="true"><span>English</span><span class="menu-check" aria-hidden="true">✓</span></button>
+          <button type="button" class="menu-item" lang="zh-Hans" disabled><span>简体中文</span><small lang="en">Coming soon</small></button>
+          <button type="button" class="menu-item" lang="zh-Hant" disabled><span>繁體中文</span><small lang="en">Coming soon</small></button>
+          <button type="button" class="menu-item" lang="ja" disabled><span>日本語</span><small lang="en">Coming soon</small></button>
         </div>
       </div>
     </nav>
@@ -73,57 +73,57 @@
 
       <form class="conv2" id="conv" autocomplete="off" novalidate>
         <!-- From: the market and the space being quoted, together -->
-        <section class="fcard" aria-labelledby="h-from">
-          <div class="c-top">
-            <h2 class="c-lbl" id="h-from">From</h2>
-            <button type="button" class="mkt" id="mkt-from" aria-haspopup="dialog"><span class="mkt-name">Singapore</span><svg class="ic sm" aria-hidden="true"><use href="#i-down"/></svg></button>
+        <section class="card card--from" aria-labelledby="h-from">
+          <div class="card-head">
+            <h2 class="card-label" id="h-from">From</h2>
+            <button type="button" class="market-select" id="mkt-from" aria-haspopup="dialog"><span class="market-name">Singapore</span><svg class="ic sm" aria-hidden="true"><use href="#i-down"/></svg></button>
           </div>
-          <div class="frow">
-            <label for="area" class="fr-l"><svg class="ic fr-ic" aria-hidden="true"><use href="#i-area"/></svg><span>Area</span></label>
-            <div class="fr-in"><input id="area" type="text" inputmode="decimal" placeholder="e.g. 1,000" enterkeyhint="next"><span class="fr-u" id="area-u">sq ft</span></div>
+          <div class="field-row">
+            <label for="area" class="field-label"><svg class="ic field-icon" aria-hidden="true"><use href="#i-area"/></svg><span>Area</span></label>
+            <div class="field-box"><input id="area" type="text" inputmode="decimal" placeholder="e.g. 1,000" enterkeyhint="next"><span class="field-unit" id="area-u">sq ft</span></div>
           </div>
-          <div class="frow">
-            <label for="rent" class="fr-l"><svg class="ic fr-ic" aria-hidden="true"><use href="#i-coin"/></svg><span>Rent</span></label>
-            <div class="fr-in"><span class="pre" id="rent-cur" aria-hidden="true">S$</span><input id="rent" type="text" inputmode="decimal" placeholder="Optional" enterkeyhint="done">
-              <button type="button" class="fr-ubtn" id="basis-btn" aria-haspopup="true" aria-expanded="false" aria-controls="basis-menu"><span id="basis-btn-lbl">/ sq ft / mo</span><svg class="ic sm" aria-hidden="true"><use href="#i-down"/></svg></button>
+          <div class="field-row">
+            <label for="rent" class="field-label"><svg class="ic field-icon" aria-hidden="true"><use href="#i-coin"/></svg><span>Rent</span></label>
+            <div class="field-box"><span class="field-prefix" id="rent-cur" aria-hidden="true">S$</span><input id="rent" type="text" inputmode="decimal" placeholder="Optional" enterkeyhint="done">
+              <button type="button" class="btn btn--unit" id="basis-btn" aria-haspopup="true" aria-expanded="false" aria-controls="basis-menu"><span id="basis-btn-lbl">/ sq ft / mo</span><svg class="ic sm" aria-hidden="true"><use href="#i-down"/></svg></button>
             </div>
-            <div class="basis-menu" id="basis-menu" role="group" aria-label="How the rent is quoted" hidden>
-              <button type="button" class="bm-it" data-b="unit"><span class="bm-t" id="bm-unit">Per sq ft</span><span class="bm-s">e.g. S$12 per sq ft a month</span></button>
-              <button type="button" class="bm-it" data-b="total"><span class="bm-t">Total for the whole space</span><span class="bm-s">e.g. US$5,000,000 a year</span></button>
+            <div class="menu" id="basis-menu" role="group" aria-label="How the rent is quoted" hidden>
+              <button type="button" class="menu-item menu-item--2line" data-b="unit"><span class="menu-item-t" id="bm-unit">Per sq ft</span><span class="menu-item-s">e.g. S$12 per sq ft a month</span></button>
+              <button type="button" class="menu-item menu-item--2line" data-b="total"><span class="menu-item-t">Total for the whole space</span><span class="menu-item-s">e.g. US$5,000,000 a year</span></button>
             </div>
           </div>
           <div class="quoted">
             <span id="quoted-txt"></span>
-            <button type="button" class="link" id="quoted-btn" aria-expanded="false" aria-controls="from-adv">Change</button>
+            <button type="button" class="btn btn--text" id="quoted-btn" aria-expanded="false" aria-controls="from-adv">Change</button>
           </div>
           <div class="adv-wrap" id="from-adv-wrap"><div class="adv-in">
           <div class="adv" id="from-adv">
-            <div class="adv-row"><span class="adv-k" id="adv-u">Unit</span><div class="seg" id="seg-from-unit" role="group" aria-labelledby="adv-u"></div></div>
-            <div class="adv-row"><span class="adv-k" id="adv-p">Rent per</span><div class="seg" id="seg-from-period" role="group" aria-labelledby="adv-p"></div></div>
+            <div class="toggle-row"><span class="toggle-label" id="adv-u">Unit</span><div class="seg" id="seg-from-unit" role="group" aria-labelledby="adv-u"></div></div>
+            <div class="toggle-row"><span class="toggle-label" id="adv-p">Rent per</span><div class="seg" id="seg-from-period" role="group" aria-labelledby="adv-p"></div></div>
           </div>
           </div></div>
         </section>
 
         <div class="swaprow">
-          <button type="button" class="swap" id="swap" aria-label="Swap From and To markets"><svg class="ic"><use href="#i-swap"/></svg></button>
+          <button type="button" class="btn btn--icon swap" id="swap" aria-label="Swap From and To markets"><svg class="ic"><use href="#i-swap"/></svg></button>
         </div>
 
-        <section class="outcard res2" aria-labelledby="h-result">
+        <section class="card card--to" aria-labelledby="h-result">
           <h2 id="h-result" class="vh">Result</h2>
-          <div class="rtop c-top">
-            <div class="c-pair">
-              <span class="c-lbl" aria-hidden="true">To</span>
-              <button type="button" class="mkt" id="mkt-to" aria-haspopup="dialog"><span class="mkt-name">Japan</span><svg class="ic sm" aria-hidden="true"><use href="#i-down"/></svg></button>
+          <div class="card-head">
+            <div class="card-pair">
+              <span class="card-label" aria-hidden="true">To</span>
+              <button type="button" class="market-select" id="mkt-to" aria-haspopup="dialog"><span class="market-name">Japan</span><svg class="ic sm" aria-hidden="true"><use href="#i-down"/></svg></button>
             </div>
-            <button type="button" class="copybtn" id="copy" disabled><span class="cb-ic" aria-hidden="true"><svg class="ic sm cb-copy"><use href="#i-copy"/></svg><svg class="ic sm cb-check" viewBox="0 0 24 24"><path pathLength="1" d="M5.5 12.5l4.2 4.2L18.5 7.8"/></svg></span><span id="copy-lbl">Copy Result</span></button>
+            <button type="button" class="btn btn--chip copy-btn" id="copy" disabled><span class="cb-ic" aria-hidden="true"><svg class="ic sm cb-copy"><use href="#i-copy"/></svg><svg class="ic sm cb-check" viewBox="0 0 24 24"><path pathLength="1" d="M5.5 12.5l4.2 4.2L18.5 7.8"/></svg></span><span id="copy-lbl">Copy Result</span></button>
           </div>
-          <div id="out" aria-live="polite"></div>
+          <div class="results" id="out" aria-live="polite"></div>
           <div class="showas" role="group" aria-label="Show the result in">
-            <div class="sa-row"><span class="sa-k" id="sa-u">Area in</span><div class="seg" id="seg-unit" role="group" aria-labelledby="sa-u"></div></div>
-            <div class="sa-row"><span class="sa-k" id="sa-p">Rent per</span><div class="seg" id="seg-period" role="group" aria-labelledby="sa-p"></div></div>
-            <div class="sa-row"><span class="sa-k" id="sa-c">Currency</span><div class="seg" id="seg-cur" role="group" aria-labelledby="sa-c"></div></div>
+            <div class="toggle-row"><span class="toggle-label" id="sa-u">Area in</span><div class="seg" id="seg-unit" role="group" aria-labelledby="sa-u"></div></div>
+            <div class="toggle-row"><span class="toggle-label" id="sa-p">Rent per</span><div class="seg" id="seg-period" role="group" aria-labelledby="sa-p"></div></div>
+            <div class="toggle-row"><span class="toggle-label" id="sa-c">Currency</span><div class="seg" id="seg-cur" role="group" aria-labelledby="sa-c"></div></div>
           </div>
-          <p class="caution" id="caution" hidden></p>
+          <p class="callout" id="caution" hidden></p>
           <p class="foot" id="fxnote"></p>
           <p class="vh" id="copy-status" aria-live="polite"></p>
         </section>
@@ -163,8 +163,8 @@
       <div class="ab-block ab-intro">
         <span class="ab-emoji" aria-hidden="true">👋</span>
         <div>
-          <h1 id="h-about">About</h1>
-          <p class="ab-lede"><b>Convert.</b><br>Built for brokers on the go: one hand, one screen, a few taps.</p>
+          <h1 id="h-about">About Lease Convert</h1>
+          <p class="ab-lede">Built for brokers on the go.<br>One screen and a few taps</p>
         </div>
       </div>
 
@@ -172,8 +172,8 @@
         <span class="ab-emoji" aria-hidden="true">💬</span>
         <div>
           <h2 id="h-fb">Feedback welcome</h2>
-          <p>A wrong number, a missing market, something confusing? Send me a note.</p>
-          <a class="ab-mail" id="fb-mail" href="mailto:feedback@example.com?subject=Lease%20Converter%20feedback"><svg class="ic sm" aria-hidden="true"><use href="#i-mail"/></svg>Email feedback</a>
+          <p>A missing market, a wrong number, something confusing?<br>Send me a note.</p>
+          <a class="btn btn--chip ab-mail" id="fb-mail" href="mailto:feedback@example.com?subject=Lease%20Convert%20feedback"><svg class="ic sm" aria-hidden="true"><use href="#i-mail"/></svg>Email feedback</a>
         </div>
       </aside>
 
@@ -191,7 +191,7 @@
   </div>
 
   <footer class="site">
-    <!-- About page only: the notes fold into one row until opened -->
+    <!-- Every page: the notes fold into one row until opened -->
     <button type="button" class="ft-sum" id="ft-sum" aria-expanded="false" aria-controls="ft-notes">Exchange rates · Rent benchmarks · Disclaimer<span class="ft-more" id="ft-more">Details</span></button>
     <div id="ft-notes">
     <dl class="updates">
@@ -203,7 +203,7 @@
   </footer>
 
   <script src="data.js?v=22"></script>
-  <script src="app.js?v=30"></script>
+  <script src="app.js?v=31"></script>
 
 </body>
 </html>

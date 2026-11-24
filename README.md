@@ -1,4 +1,4 @@
-# Lease Converter
+# Lease Convert
 
 **Convert retail rents and floor areas between Asia-Pacific, US and UK markets, in the way each market actually quotes them.**
 
@@ -13,7 +13,7 @@ Retail leasing has no common standard for quoting rent:
 - **Sydney** quotes A$ per m² per **year**.
 - **London** quotes £ per sq ft per year on a **Zone A** basis for high-street shops.
 
-Lease Converter is a small, fast web app that turns a rent and an area into another market's terms in one step. It's built for retail real estate brokers to use mid-conversation with a client.
+Lease Convert is a small, fast web app that turns a rent and an area into another market's terms in one step. It's built for retail real estate brokers to use mid-conversation with a client.
 
 ---
 
@@ -94,14 +94,17 @@ Plain HTML, CSS and JavaScript, with no framework, build step or dependencies.
 ```
 index.html             Page structure and the views (Convert, Markets, Trends, About)
 CHANGELOG.md           What changed in each release
-app.css                Styles, light and dark themes, responsive layout
+app.css                Design tokens and components, light and dark themes, responsive layout
+styleguide.html        Living style guide: every token and component, drawn by app.css
+DESIGN-SYSTEM.md       How the tokens and components are organised, and how they map to Figma
 app.js                 Conversion logic, routing, exchange-rate loading
 data.js                Market conventions and rent benchmarks (the file the weekly update edits)
 sw.js                  Service worker for offline use
 manifest.webmanifest   Home-screen app settings
 ```
 
-- **Accessibility:** every input is labelled, results are announced to screen readers, keyboard focus is visible, the market list works with the keyboard (arrows, Enter, Esc), and the app respects Reduce Motion (no springs, tilts or slides) and Reduce Transparency. Swiping and dragging are shortcuts; every page is also one tap away in the navigation bar. Most tap targets are 38–44px tall; the result toggles are 30px tall but wide, to keep the whole result on one screen.
+- **Design system:** colours, type, spacing and radii are CSS variables at the top of `app.css`, and every button, menu, card and control is a named component built only from them. The same tokens and components live in the Figma design file. Open `styleguide.html` to see them all.
+- **Accessibility:** every input is labelled, results are announced to screen readers, keyboard focus is visible, the market list works with the keyboard (arrows, Enter, Esc), and the app respects Reduce Motion (no springs, tilts or slides) and Reduce Transparency. Swiping and dragging are shortcuts; every page is also one tap away in the navigation bar. Most tap targets are 36–44px tall; Copy Result and the Rent unit button are 32px, and small text links get a larger invisible tap area. Text passes 4.5:1 contrast in light and dark.
 - **Privacy:** there are no accounts, no tracking and no analytics. The only outside request is for exchange rates.
 
 ### Run it locally

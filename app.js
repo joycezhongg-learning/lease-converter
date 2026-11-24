@@ -138,7 +138,7 @@
   const basisBtn = $("basis-btn"), basisMenu = $("basis-menu");
   function setBasisMenu(open) { basisMenu.hidden = !open; basisBtn.setAttribute("aria-expanded", String(open)); if (open) basisMenu.querySelector(`[data-b="${S.basis}"]`).focus(); }
   basisBtn.addEventListener("click", () => setBasisMenu(basisMenu.hidden));
-  basisMenu.addEventListener("click", (e) => { const b = e.target.closest(".bm-it"); if (!b) return; setBasis(b.dataset.b); setBasisMenu(false); el.rent.focus(); });
+  basisMenu.addEventListener("click", (e) => { const b = e.target.closest(".menu-item"); if (!b) return; setBasis(b.dataset.b); setBasisMenu(false); el.rent.focus(); });
   document.addEventListener("click", (e) => { if (!basisMenu.hidden && !e.target.closest("#basis-menu, #basis-btn")) setBasisMenu(false); });
   document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !basisMenu.hidden) { setBasisMenu(false); basisBtn.focus(); } });
 
@@ -209,7 +209,7 @@
     btn.addEventListener("click", () => openSheet(which));
     return {
       select(id) {
-        btn.querySelector(".mkt-name").textContent = byId[id].name;
+        btn.querySelector(".market-name").textContent = byId[id].name;
         btn.setAttribute("aria-label", `${which === "from" ? "From" : "To"} market: ${byId[id].name}. Change market`);
       },
       sync() {},
@@ -372,7 +372,7 @@
     document.documentElement.dataset.basis = S.basis; // lets CSS give long totals a little more room
     $("basis-btn-lbl").textContent = totalMode ? totalSuffix : unitSuffix;
     $("bm-unit").textContent = `Per ${uL}`;
-    basisMenu.querySelectorAll(".bm-it").forEach((b) => b.setAttribute("aria-current", String(b.dataset.b === S.basis)));
+    basisMenu.querySelectorAll(".menu-item").forEach((b) => b.setAttribute("aria-current", String(b.dataset.b === S.basis)));
     el.rent.setAttribute("aria-label", totalMode ? `Total rent for the space, ${sym} per ${PERIODS[S.rentPeriod].label}` : `Rent, ${sym} per ${uL} per ${PERIODS[S.rentPeriod].label}`);
     // Change panel: one unit for area and rent, and the period
     const fUnits = ["sqm", "sqft"]; if (PINGS.has(fm.unit)) fUnits.push(fm.unit);
@@ -478,7 +478,7 @@
         <div><dt>What's included</dt><dd>${m.included}</dd></div>
         ${m.extras.length ? `<div><dt>Good to know</dt><dd><ul>${m.extras.map((x) => `<li>${x}</li>`).join("")}</ul></dd></div>` : ""}
       </dl>
-      ${m.caution ? `<p class="note-warn">${ico("i-info")}<span>${m.caution}</span></p>` : ""}
+      ${m.caution ? `<p class="callout callout--warn">${ico("i-info")}<span>${m.caution}</span></p>` : ""}
       <section class="bench" aria-labelledby="bh">
         <h2 id="bh" class="bench-h">${ico("i-store").replace('class="ic"', 'class="ic sm"')}Latest benchmark</h2>
         <p class="big">${benchLocal(m)}</p>
@@ -487,8 +487,8 @@
         ${b.extra ? `<p class="meta">${b.extra}</p>` : ""}
         <p class="meta">Source publishes: ${b.freq.toLowerCase()} · Last checked ${CHECKED}</p>
         <div class="actions">
-          <a class="btn primary" href="#/" data-convert="${m.id}">Convert to ${m.name}</a>
-          <a class="btn" href="${b.url}" target="_blank" rel="noopener">Source ${ico("i-arrow").replace('class="ic"', 'class="ic sm"')}</a>
+          <a class="btn btn--outline btn--primary" href="#/" data-convert="${m.id}">Convert to ${m.name}</a>
+          <a class="btn btn--outline" href="${b.url}" target="_blank" rel="noopener">Source ${ico("i-arrow").replace('class="ic"', 'class="ic sm"')}</a>
         </div>
       </section>
     </article>`;
@@ -508,7 +508,7 @@
     $("fxnote2").textContent = fxNote();
   }
 
-  // About page: footer notes fold into one row; the row opens them
+  // Footer notes fold into one row on every page; the row opens them
   const ftSum = $("ft-sum");
   function setNotes(open) { ftSum.setAttribute("aria-expanded", String(open)); document.documentElement.toggleAttribute("data-notes-open", open); $("ft-more").textContent = open ? "Hide" : "Details"; }
   ftSum.addEventListener("click", () => setNotes(ftSum.getAttribute("aria-expanded") !== "true"));
@@ -520,7 +520,7 @@
   // new tab, then the trailing edge catches up and it settles (a little squash while stretched).
   // Press and drag across the pill and the bubble follows your finger; let go to open that tab.
   const bubble = (() => {
-    const pill = document.querySelector(".pill"), el = pill.querySelector(".bubble");
+    const pill = document.querySelector(".nav-pill"), el = pill.querySelector(".nav-bubble");
     const tabs = () => [...pill.querySelectorAll("a[data-nav]")].filter((a) => a.offsetParent);
     const SPRING = { lead: [520, 30], trail: [240, 25] }; // [stiffness, damping] — tweak here
     let L = { x: 0, v: 0 }, R = { x: 0, v: 0 }, tL = 0, tR = 0, raf = 0, last = 0, shown = false;
@@ -621,14 +621,14 @@
       const on = n.dataset.nav === v || (v === "market" && n.dataset.nav === "markets");
       on ? n.setAttribute("aria-current", "page") : n.removeAttribute("aria-current");
     });
-    bubble.place(document.querySelector(".pill [data-nav][aria-current]"), route.ran);
+    bubble.place(document.querySelector(".nav-pill [data-nav][aria-current]"), route.ran);
     if (v === "market") renderMarket(b);
     if (v === "trends") renderTrends();
     if (v === "convert") { render(); requestAnimationFrame(syncWheels); }
-    const titles = { convert: "Lease Converter", markets: "Market Guides · Lease Converter", trends: "Latest Retail Rents · Lease Converter", about: "About · Lease Converter", market: `${byId[b]?.name ?? "Market"} · Lease Converter` };
+    const titles = { convert: "Lease Convert", markets: "Market Guides · Lease Convert", trends: "Latest Retail Rents · Lease Convert", about: "About · Lease Convert", market: `${byId[b]?.name ?? "Market"} · Lease Convert` };
     document.title = titles[v];
     document.documentElement.dataset.view = v;
-    if (v !== "about") setNotes(false);
+    setNotes(false); // each page starts with the footer notes folded
     if (route.ran) { window.scrollTo(0, 0); $("main").focus({ preventScroll: true }); }
     route.ran = true;
     if (typeof onScroll === "function") onScroll();
@@ -649,7 +649,7 @@
   window.addEventListener("popstate", route);
 
   // Nav glass turns sheerer once the page scrolls
-  const pills = document.querySelectorAll(".top .pill"); // nav + language button
+  const pills = document.querySelectorAll(".app-header .nav-pill"); // nav + language button
   const darkCard = null; // app-cards: the result card is light now, so the nav never needs its on-dark colours
   function onScroll() {
     const p = pills[0].getBoundingClientRect(), mid = (p.top + p.bottom) / 2;
@@ -677,7 +677,7 @@
     else if (refocus) langBtn.focus();
   }
   langBtn.addEventListener("click", () => setLangMenu(langMenu.hidden));
-  langMenu.addEventListener("click", (e) => { const b = e.target.closest(".lm-it"); if (b && !b.disabled) setLangMenu(false, true); });
+  langMenu.addEventListener("click", (e) => { const b = e.target.closest(".menu-item"); if (b && !b.disabled) setLangMenu(false, true); });
   document.addEventListener("click", (e) => { if (!langMenu.hidden && !e.target.closest(".langwrap")) setLangMenu(false); });
   document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !langMenu.hidden) setLangMenu(false, true); });
   window.addEventListener("hashchange", () => setLangMenu(false));

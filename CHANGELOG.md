@@ -2,6 +2,20 @@
 
 Releases are numbered by the app's cache version (`VERSION` in `sw.js`). Weekly benchmark updates change only the figures in `data.js` and aren't listed here.
 
+## v12, 24 Nov 2026: a design system, and a tidier look
+
+Under the hood the app now runs on a small design system: one set of colours, type sizes and spacing, and one definition for each button, menu and control. The same system lives in the Figma design file. What you'll see:
+
+- **Things that should match now match.** The Copy Result and Email feedback buttons use the same grey. Both pop-up menus (App language and the Rent unit menu) have the same corners, border and shadow. The toggles in the Change panel are the same width as those under the result, so they line up, and their labels use the same colour.
+- **Crisper toggles.** Unselected options are drawn in a solid dark grey instead of faded text, and the corners of the toggles now nest inside their grey track.
+- **Easier to read.** Six text sizes used everywhere, page titles at 24px bold, and darker grey for small text, so it passes the 4.5:1 contrast guideline. The From label is orange and the To label purple; blue now only marks things you can tap.
+- **Easier to tap.** The toggles are 36px tall, and the Change, market guide and About & feedback links have larger tap areas.
+- **Footer notes fold away on every page** into one row (Exchange rates · Rent benchmarks · Disclaimer); tap Details to open them.
+- **New name: Lease Convert** in the browser tab and on the home screen. The web address is unchanged.
+- **About page** has shorter copy.
+- **Style guide** at [styleguide.html](styleguide.html) shows every colour, text size and component.
+- Fixed: the blue Convert button's border turned black on hover, and Copy Result could stay grey after a tap on phones.
+
 ## v11.1, 24 Nov 2026: smoother swipes on iPhone
 
 - **No more jitter while swiping.** A slightly diagonal swipe could make the page scroll up and down at the same time as it slid sideways. The page now tells the phone up front that sideways drags switch tabs, so the two no longer fight. Scrolling up and down and pinch-to-zoom work as before.
